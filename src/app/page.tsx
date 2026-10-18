@@ -108,11 +108,20 @@ export default function HomePage() {
       console.error('Erro ao ler sacola', e);
     }
 
+    // 3.1 Limpar resíduo de catálogo de camisas demo antigas no localStorage
+    try {
+      const catalogCleaned = localStorage.getItem('cs_clothing_catalog_cleaned_v6');
+      if (!catalogCleaned) {
+        localStorage.removeItem('cs_clothing_products');
+        localStorage.setItem('cs_clothing_catalog_cleaned_v6', 'true');
+      }
+    } catch (e) {}
+
     // 4. Carregar Dados Persistentes do Servidor (/api/store/data)
     fetch('/api/store/data')
       .then((res) => res.json())
       .then((data) => {
-        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+        if (data.products && Array.isArray(data.products)) {
           setProducts(data.products);
           try {
             localStorage.setItem('cs_clothing_products', JSON.stringify(data.products));

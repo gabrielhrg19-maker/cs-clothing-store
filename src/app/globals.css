@@ -41,3 +41,29 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(150, 150, 150, 0.5);
 }
+
+/* Estilos de Impressão de Etiqueta Jadlog */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #jadlog-shipping-label,
+  #jadlog-shipping-label * {
+    visibility: visible;
+  }
+  #jadlog-shipping-label {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 140mm;
+    margin: 0 auto;
+    padding: 5mm;
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+

@@ -1636,10 +1636,73 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
               </div>
 
               {orders.length === 0 ? (
-                <div className="bg-white p-12 rounded-2xl border border-neutral-200 text-center space-y-2 text-neutral-400">
+                <div className="bg-white p-12 rounded-2xl border border-neutral-200 text-center space-y-3 text-neutral-400">
                   <Package className="w-10 h-10 mx-auto stroke-1" />
                   <p className="font-bold text-neutral-700">Nenhum pedido realizado ainda.</p>
                   <p className="text-xs">Assim que um cliente comprar no site, o pedido aparecerá aqui com o código de rastreamento Jadlog.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const demoOrder: Order = {
+                        id: `ord-demo-${Date.now()}`,
+                        orderNumber: `CS-${Math.floor(100000 + Math.random() * 900000)}`,
+                        createdAt: new Date().toISOString(),
+                        items: [
+                          {
+                            product: products[0] || {
+                              id: 'cs-demo',
+                              name: 'Camisa Social Nobre',
+                              subtitle: '',
+                              description: '',
+                              material: 'Algodão Nobre',
+                              composition: '100% Algodão',
+                              hsCode: '6205.20',
+                              weightGrams: 280,
+                              packageDimensions: { lengthCm: 32, widthCm: 24, heightCm: 3 },
+                              priceBRL: 199.90,
+                              priceUSD: 40.00,
+                              priceEUR: 36.00,
+                              category: 'Camisa Social',
+                              images: [],
+                              variants: [{ id: 'v-1', size: 'M', color: 'Branco', stock: 10 }],
+                            },
+                            variant: { id: 'v-demo', size: 'M', color: 'Branco', stock: 10 },
+                            quantity: 1,
+                          },
+                        ],
+                        shippingAddress: {
+                          fullName: 'Carlos Eduardo Mendes',
+                          email: 'carlos.mendes@email.com',
+                          phone: '(11) 98765-4321',
+                          postalCode: '04571-010',
+                          state: 'SP',
+                          city: 'São Paulo',
+                          street: 'Av. das Nações Unidas',
+                          number: '12901',
+                          complement: 'Torre Oeste - Sala 140',
+                        },
+                        selectedRate: {
+                          id: 'jadlog-package',
+                          carrier: 'Jadlog',
+                          serviceName: 'JADLOG .PACKAGE',
+                          serviceCode: 'JADLOG-PKG',
+                          priceBRL: 24.90,
+                          estimatedDays: '2 a 4 dias úteis',
+                          logoBadge: 'Jadlog Express',
+                        },
+                        subtotal: 199.90,
+                        shippingCost: 24.90,
+                        total: 224.80,
+                        status: 'Pago',
+                        trackingNumber: `JAD-BR-${Math.floor(10000000 + Math.random() * 90000000)}`,
+                      };
+                      setPrintingOrder(demoOrder);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer mt-2"
+                  >
+                    <Printer className="w-4 h-4 text-emerald-400" />
+                    <span>Ver / Testar Impressão de Etiqueta Modelo</span>
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -1780,7 +1843,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs overflow-y-auto">
           <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-neutral-300 my-6">
             {/* Cabeçalho do Modal de Impressão */}
-            <div className="bg-neutral-950 text-white p-4 flex items-center justify-between">
+            <div className="bg-neutral-950 text-white p-4 flex items-center justify-between no-print">
               <div className="flex items-center gap-2">
                 <Printer className="w-4 h-4 text-emerald-400" />
                 <span className="font-bold text-sm">Etiqueta de Envio Jadlog</span>
@@ -1789,7 +1852,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shadow-sm"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Imprimir (Ctrl+P)
@@ -1805,7 +1868,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
             </div>
 
             {/* Corpo da Etiqueta Padrão de Despacho */}
-            <div className="p-6 bg-white space-y-4 font-sans text-xs text-neutral-900 border-b border-neutral-200">
+            <div id="jadlog-shipping-label" className="p-6 bg-white space-y-4 font-sans text-xs text-neutral-900 border-b border-neutral-200">
               <div className="border-2 border-neutral-950 p-4 rounded-xl space-y-4">
                 <div className="flex items-center justify-between border-b-2 border-neutral-950 pb-3">
                   <div>
@@ -1892,7 +1955,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
             </div>
 
             {/* Rodapé com Instruções de Despacho */}
-            <div className="p-4 bg-neutral-50 flex items-center justify-between text-xs text-neutral-500">
+            <div className="p-4 bg-neutral-50 flex items-center justify-between text-xs text-neutral-500 no-print">
               <span>Cole esta etiqueta no envelope flyer de segurança (32x24cm).</span>
               <button
                 type="button"

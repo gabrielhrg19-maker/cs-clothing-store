@@ -12,6 +12,7 @@ import { AdminCMSModal } from '../components/AdminCMSModal';
 import { CategoryManagerModal } from '../components/CategoryManagerModal';
 import { FloatingSocialButtons } from '../components/FloatingSocialButtons';
 import { INITIAL_PRODUCTS, DEFAULT_SITE_SETTINGS } from '../data/products';
+import { safeSetLocalStorage, safeGetStoredData } from '../lib/storage';
 import {
   Product,
   ProductVariant,
@@ -62,7 +63,7 @@ export default function HomePage() {
   const [checkoutZip, setCheckoutZip] = useState<string>('01310-100');
 
 
-  // Carregar dados salvos do servidor (/api/store/data) e localStorage
+  // Carregar dados salvos com tolerância a falhas (IndexedDB, LocalStorage e Servidor)
   useEffect(() => {
     // 1. Tema (Dark / Light)
     try {
@@ -90,7 +91,6 @@ export default function HomePage() {
       const hasCleanedDemo = localStorage.getItem('cs_clothing_cart_demo_cleared_v4');
 
       if (!hasCleanedDemo) {
-        // Limpa definitivamente resíduo da camisa demo anterior
         localStorage.removeItem('cs_clothing_cart');
         localStorage.setItem('cs_clothing_cart_demo_cleared_v4', 'true');
         setCartItems([]);
@@ -108,87 +108,114 @@ export default function HomePage() {
       console.error('Erro ao ler sacola', e);
     }
 
-    // 3.1 Limpar resíduo de catálogo de camisas demo antigas no localStorage
-    try {
-      const catalogCleaned = localStorage.getItem('cs_clothing_catalog_cleaned_v6');
-      if (!catalogCleaned) {
-        localStorage.removeItem('cs_clothing_products');
-        localStorage.setItem('cs_clothing_catalog_cleaned_v6', 'true');
+    // 4. Carregamento ultra-seguro e sincronização bidirecional
+    (async () => {
+      // 4.1 Carregamento imediato do cache local (0ms de espera)
+      const cachedProds = await safeGetStoredData<Product[]>('cs_clothing_products');
+      if (cachedProds && Array.isArray(cachedProds) && cachedProds.length > 0) {
+        setProducts(cachedProds);
       }
-    } catch (e) {}
 
-    // 4. Carregar Dados Persistentes do Servidor (/api/store/data)
-    fetch('/api/store/data')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.products && Array.isArray(data.products)) {
-          setProducts(data.products);
-          try {
-            localStorage.setItem('cs_clothing_products', JSON.stringify(data.products));
-          } catch (e) {}
-        }
-        if (data.siteSettings) {
-          setSiteSettings(data.siteSettings);
-          try {
-            localStorage.setItem('cs_clothing_settings', JSON.stringify(data.siteSettings));
-          } catch (e) {}
-        }
-        if (data.orders && Array.isArray(data.orders)) {
-          setOrders(data.orders);
-          try {
-            localStorage.setItem('cs_clothing_orders', JSON.stringify(data.orders));
-          } catch (e) {}
-        }
-      })
-      .catch((err) => {
-        console.error('Erro ao buscar dados do servidor, usando fallback local:', err);
-        try {
-          const savedProds = localStorage.getItem('cs_clothing_products');
-          if (savedProds) setProducts(JSON.parse(savedProds));
+      const cachedSettings = await safeGetStoredData<SiteSettings>('cs_clothing_settings');
+      if (cachedSettings && cachedSettings.storeName) {
+        setSiteSettings(cachedSettings);
+      }
 
-          const savedSettings = localStorage.getItem('cs_clothing_settings');
-          if (savedSettings) {
-            try {
-              const parsed = JSON.parse(savedSettings);
-              setSiteSettings({ ...DEFAULT_SITE_SETTINGS, ...parsed });
-            } catch {
-              setSiteSettings(DEFAULT_SITE_SETTINGS);
-            }
+      const cachedOrders = await safeGetStoredData<Order[]>('cs_clothing_orders');
+      if (cachedOrders && Array.isArray(cachedOrders) && cachedOrders.length > 0) {
+        setOrders(cachedOrders);
+      }
+
+      // 4.2 Busca dados no servidor com proteção contra sobrescrita indevida
+      try {
+        const res = await fetch('/api/store/data');
+        if (res.ok) {
+          const data = await res.json();
+
+          // Sincronização inteligente de Produtos:
+          if (Array.isArray(data.products) && data.products.length > 0) {
+            setProducts(data.products);
+            safeSetLocalStorage('cs_clothing_products', data.products);
+          } else if (cachedProds && Array.isArray(cachedProds) && cachedProds.length > 0) {
+            // Se o servidor estiver vazio, NUNCA apaga os dados locais: sobe o cache do usuário para o servidor
+            console.log('Restaurando produtos locais para o servidor...');
+            fetch('/api/store/data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ products: cachedProds }),
+            }).catch(() => {});
           }
 
-          const savedOrders = localStorage.getItem('cs_clothing_orders');
-          if (savedOrders) setOrders(JSON.parse(savedOrders));
-        } catch (e) {
-          console.error('Erro ao ler localStorage', e);
+          // Sincronização inteligente de Configurações:
+          if (data.siteSettings && data.siteSettings.storeName) {
+            setSiteSettings(data.siteSettings);
+            safeSetLocalStorage('cs_clothing_settings', data.siteSettings);
+          } else if (cachedSettings) {
+            fetch('/api/store/data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ siteSettings: cachedSettings }),
+            }).catch(() => {});
+          }
+
+          // Sincronização inteligente de Pedidos:
+          if (Array.isArray(data.orders) && data.orders.length > 0) {
+            setOrders(data.orders);
+            safeSetLocalStorage('cs_clothing_orders', data.orders);
+          } else if (cachedOrders && cachedOrders.length > 0) {
+            fetch('/api/store/data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ orders: cachedOrders }),
+            }).catch(() => {});
+          }
         }
-      });
+      } catch (err) {
+        console.warn('Servidor offline ou iniciando, dados locais mantidos com segurança:', err);
+      }
+    })();
   }, []);
 
-  // Salvar alterações de produtos permanentemente no servidor e cache local
+  // Salvar alterações de produtos permanentemente no servidor e cache local redundante
   const handleSaveProducts = async (newProducts: Product[]) => {
     setProducts(newProducts);
+    safeSetLocalStorage('cs_clothing_products', newProducts);
     try {
-      localStorage.setItem('cs_clothing_products', JSON.stringify(newProducts));
-      await fetch('/api/store/data', {
+      const res = await fetch('/api/store/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ products: newProducts }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.products && Array.isArray(data.products)) {
+          // Servidor descarregou imagens base64 em URLs limpas (/uploads/...)
+          setProducts(data.products);
+          safeSetLocalStorage('cs_clothing_products', data.products);
+        }
+      }
     } catch (e) {
       console.error('Erro ao salvar produtos no servidor:', e);
     }
   };
 
-  // Salvar alterações de configurações permanentemente no servidor e cache local
+  // Salvar alterações de configurações permanentemente no servidor e cache local redundante
   const handleSaveSettings = async (newSettings: SiteSettings) => {
     setSiteSettings(newSettings);
+    safeSetLocalStorage('cs_clothing_settings', newSettings);
     try {
-      localStorage.setItem('cs_clothing_settings', JSON.stringify(newSettings));
-      await fetch('/api/store/data', {
+      const res = await fetch('/api/store/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ siteSettings: newSettings }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.siteSettings) {
+          setSiteSettings(data.siteSettings);
+          safeSetLocalStorage('cs_clothing_settings', data.siteSettings);
+        }
+      }
     } catch (e) {
       console.error('Erro ao salvar configurações no servidor:', e);
     }
@@ -204,8 +231,8 @@ export default function HomePage() {
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
     const updated = orders.map((o) => (o.id === orderId ? { ...o, status } : o));
     setOrders(updated);
+    safeSetLocalStorage('cs_clothing_orders', updated);
     try {
-      localStorage.setItem('cs_clothing_orders', JSON.stringify(updated));
       await fetch('/api/store/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -220,8 +247,8 @@ export default function HomePage() {
   const handleDeleteOrder = async (orderId: string) => {
     const updated = orders.filter((o) => o.id !== orderId);
     setOrders(updated);
+    safeSetLocalStorage('cs_clothing_orders', updated);
     try {
-      localStorage.setItem('cs_clothing_orders', JSON.stringify(updated));
       await fetch('/api/store/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -235,8 +262,8 @@ export default function HomePage() {
   // Limpar todos os pedidos no servidor e cache local
   const handleClearAllOrders = async () => {
     setOrders([]);
+    safeSetLocalStorage('cs_clothing_orders', []);
     try {
-      localStorage.setItem('cs_clothing_orders', JSON.stringify([]));
       await fetch('/api/store/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -252,10 +279,10 @@ export default function HomePage() {
     setProducts(INITIAL_PRODUCTS);
     setSiteSettings(DEFAULT_SITE_SETTINGS);
     setOrders([]);
+    safeSetLocalStorage('cs_clothing_products', INITIAL_PRODUCTS);
+    safeSetLocalStorage('cs_clothing_settings', DEFAULT_SITE_SETTINGS);
+    safeSetLocalStorage('cs_clothing_orders', []);
     try {
-      localStorage.removeItem('cs_clothing_products');
-      localStorage.removeItem('cs_clothing_settings');
-      localStorage.removeItem('cs_clothing_orders');
       await fetch('/api/store/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -386,8 +413,8 @@ export default function HomePage() {
   const handleOrderCompleted = async (order: Order) => {
     const updated = [order, ...orders];
     setOrders(updated);
+    safeSetLocalStorage('cs_clothing_orders', updated);
     try {
-      localStorage.setItem('cs_clothing_orders', JSON.stringify(updated));
       await fetch('/api/store/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

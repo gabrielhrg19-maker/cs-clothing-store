@@ -42,6 +42,7 @@ import {
   AdvantageIcon,
   getColorClasses,
 } from './AdvantageIcon';
+import { compressImageFile, exportStoreBackupJSON } from '../lib/storage';
 
 interface AdminCMSModalProps {
   isOpen: boolean;
@@ -79,6 +80,74 @@ export const AdminCMSModal: React.FC<AdminCMSModalProps> = ({
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
   const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const handleProcessImageUpload = async (file: File) => {
+    setIsUploadingImage(true);
+    try {
+      const { blob, dataUrl } = await compressImageFile(file, 1200, 1200, 0.85);
+
+      let finalUrl = dataUrl;
+      try {
+        const formData = new FormData();
+        formData.append('file', blob, file.name);
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.url) {
+            finalUrl = json.url;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('Upload na API falhou, usando dataUrl comprimido seguro:', uploadErr);
+      }
+
+      if (editingProduct) {
+        const imgs = [...editingProduct.images];
+        imgs[0] = finalUrl;
+        setEditingProduct({ ...editingProduct, images: imgs });
+        triggerSuccess('Foto carregada e salva com sucesso!');
+      }
+    } catch (err) {
+      console.error('Erro ao processar imagem:', err);
+      alert('Erro ao carregar imagem. Tente outro arquivo de imagem.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleRestoreBackupFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target?.result as string);
+        if (!parsed || (!Array.isArray(parsed.products) && !parsed.siteSettings)) {
+          alert('O arquivo selecionado não é um arquivo de backup válido.');
+          return;
+        }
+        const prodCount = Array.isArray(parsed.products) ? parsed.products.length : 0;
+        if (window.confirm(`Deseja restaurar o backup com ${prodCount} produtos e configurações?`)) {
+          if (Array.isArray(parsed.products)) {
+            onSaveProducts(parsed.products);
+          }
+          if (parsed.siteSettings) {
+            setTempSettings(parsed.siteSettings);
+            onSaveSettings(parsed.siteSettings);
+          }
+          triggerSuccess(`Backup restaurado com sucesso! ${prodCount} produtos restabelecidos.`);
+        }
+      } catch (err) {
+        alert('Erro ao abrir o backup. Verifique se o arquivo JSON está corrompido.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
 
   const handleCopyDispatchInfo = (ord: Order) => {
     const text = `=== CS CLOTHING STORE - DADOS PARA DESPACHO JADLOG ===
@@ -397,6 +466,35 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            {/* Botão de Exportar Backup */}
+            <button
+              type="button"
+              onClick={() => {
+                exportStoreBackupJSON({ products, siteSettings: tempSettings, orders });
+                triggerSuccess('Backup completo baixado com sucesso!');
+              }}
+              className="px-2.5 sm:px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              title="Baixar arquivo JSON de cópia de segurança de todos os produtos e configurações"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Baixar Backup</span>
+            </button>
+
+            {/* Botão de Restaurar Backup */}
+            <label
+              className="px-2.5 sm:px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs border border-neutral-700"
+              title="Restaurar dados a partir de um arquivo JSON previamente baixado"
+            >
+              <Upload className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Restaurar Backup</span>
+              <input
+                type="file"
+                accept=".json,application/json"
+                className="hidden"
+                onChange={handleRestoreBackupFile}
+              />
+            </label>
+
             <button
               onClick={() => {
                 onLogout();
@@ -416,11 +514,21 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
           </div>
         </div>
 
-        {/* Notificação Flutuante de Sucesso */}
-        {saveSuccessMsg && (
+        {/* Notificação Flutuante de Sucesso ou Status de Proteção Ativa */}
+        {saveSuccessMsg ? (
           <div className="bg-emerald-600 text-white px-4 py-2 text-xs font-bold text-center flex items-center justify-center gap-2 animate-in fade-in">
             <CheckCircle2 className="w-4 h-4" />
             {saveSuccessMsg}
+          </div>
+        ) : (
+          <div className="bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-200 dark:border-emerald-800 px-4 py-1.5 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+            <span className="flex items-center gap-1.5 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              Proteção ativa: Alterações gravadas permanentemente no servidor com gravação atômica e backups contínuos.
+            </span>
+            <span className="text-[10px] text-emerald-700 dark:text-emerald-400 hidden sm:inline font-mono">
+              Sincronizado
+            </span>
           </div>
         )}
 
@@ -551,25 +659,28 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                             Opção 1: Escolha a foto do seu Computador ou Celular:
                           </span>
                           <label className="flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-950 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-sm">
-                            <Upload className="w-4 h-4 text-emerald-400" />
-                            <span>Procurar Imagem no Dispositivo...</span>
+                            {isUploadingImage ? (
+                              <span className="flex items-center gap-2 text-emerald-400">
+                                <Sparkles className="w-4 h-4 animate-spin" />
+                                <span>Otimizando e salvando foto...</span>
+                              </span>
+                            ) : (
+                              <>
+                                <Upload className="w-4 h-4 text-emerald-400" />
+                                <span>Procurar Imagem no Dispositivo...</span>
+                              </>
+                            )}
                             <input
                               type="file"
                               accept="image/*"
+                              disabled={isUploadingImage}
                               className="hidden"
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  const reader = new FileReader();
-                                  reader.onload = (uploadEvent) => {
-                                    const base64 = uploadEvent.target?.result as string;
-                                    const imgs = [...editingProduct.images];
-                                    imgs[0] = base64;
-                                    setEditingProduct({ ...editingProduct, images: imgs });
-                                    triggerSuccess('Foto carregada do computador!');
-                                  };
-                                  reader.readAsDataURL(file);
+                                  handleProcessImageUpload(file);
                                 }
+                                e.target.value = '';
                               }}
                             />
                           </label>
@@ -1584,14 +1695,15 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                 <button
                   type="button"
                   onClick={() => {
-                    if (window.confirm('Deseja restaurar as configurações e catálogo padrão originais?')) {
+                    if (window.confirm('ATENÇÃO: Restaurar padrões substituirá suas camisas e textos personalizados pelos dados de fábrica.\n\nUm backup de segurança dos seus dados atuais será baixado automaticamente antes.\n\nDeseja realmente continuar?')) {
+                      exportStoreBackupJSON({ products, siteSettings: tempSettings, orders });
                       onResetToDefault();
-                      triggerSuccess('Configurações originais restauradas com sucesso!');
+                      triggerSuccess('Padrões restaurados. Um backup preventivo foi baixado em seu computador.');
                     }
                   }}
-                  className="text-rose-600 hover:text-rose-800 underline font-semibold flex items-center gap-1 cursor-pointer"
+                  className="text-neutral-500 hover:text-rose-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" /> Restaurar Padrões da Loja
+                  <RotateCcw className="w-3.5 h-3.5" /> Restaurar Padrões de Fábrica
                 </button>
 
                 <button

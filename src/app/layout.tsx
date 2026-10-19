@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CLOTHING STORE",
-  description: "CS CLOTHING STORE - Roupas Unisex, Streetwear e Moda Autoral com entrega expressa para todo o Brasil.",
+  description: "CS CLOTHING STORE - Roupas Unissex, Streetwear e Moda Autoral com entrega expressa para todo o Brasil.",
   icons: {
     icon: "/cs-clothing-logo.png",
     shortcut: "/cs-clothing-logo.png",

@@ -45,7 +45,7 @@ export default function HomePage() {
   // Tema (Dark / Light) com persistência - padrão 'light' (modo claro límpido e elegante)
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-  // Filtro de Categoria (Padrão: Todas as Peças Unisex)
+  // Filtro de Categoria (Padrão: Todas as Peças Unissex)
   const [categoryFilter, setCategoryFilter] = useState<string>('Todas');
 
   // Sacola e Modais
@@ -431,7 +431,7 @@ export default function HomePage() {
     handleClearCart();
   };
 
-  // Filtragem de Produtos (Coleção 100% Unisex filtrada por Categoria)
+  // Filtragem de Produtos (Coleção 100% Unissex filtrada por Categoria)
   const filteredProducts = products.filter((prod) => {
     if (categoryFilter !== 'Todas' && prod.category !== categoryFilter) return false;
     return true;
@@ -515,7 +515,7 @@ export default function HomePage() {
                     }}
                     className="px-6 py-3.5 bg-purple-900 hover:bg-purple-800 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center gap-2 cursor-pointer active:scale-95"
                   >
-                    <span>✨ Ver Coleção Unisex</span>
+                    <span>✨ Ver Coleção Unissex</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
@@ -620,7 +620,7 @@ export default function HomePage() {
           )
         )}
 
-        {/* Catálogo de Roupas Unisex */}
+        {/* Catálogo de Roupas Unissex */}
         <section id="catalogo" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
@@ -639,15 +639,15 @@ export default function HomePage() {
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-neutral-950 dark:text-white tracking-tight mt-1">
                 {categoryFilter === 'Todas'
-                  ? '✨ Roupas & Streetwear Unisex'
-                  : `✨ ${categoryFilter} Unisex`}
+                  ? '✨ Roupas & Streetwear Unissex'
+                  : `✨ ${categoryFilter} Unissex`}
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Exibindo {filteredProducts.length} modelo(s) com pronta entrega e envio rápido para todo o Brasil.
               </p>
             </div>
 
-            {/* Categorias Dinâmicas & Editáveis (Todas Unisex) */}
+            {/* Categorias Dinâmicas & Editáveis (Todas Unissex) */}
             <div className="flex flex-wrap gap-1.5 items-center">
               <button
                 onClick={() => setCategoryFilter('Todas')}
@@ -657,7 +657,7 @@ export default function HomePage() {
                     : 'bg-white dark:bg-[#12131b] text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-700'
                 }`}
               >
-                ✨ Unisex (Todas)
+                ✨ Unissex (Todas)
               </button>
 
               {currentCategories.map((cat) => (
@@ -693,7 +693,7 @@ export default function HomePage() {
             <div className="text-center py-16 sm:py-20 bg-white dark:bg-[#0e0f17] rounded-3xl border border-neutral-200 dark:border-neutral-800 space-y-3">
               <Package className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mx-auto" />
               <h4 className="text-base font-bold text-neutral-800 dark:text-neutral-200">Nenhuma peça encontrada nesta categoria.</h4>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">Tente selecionar outra categoria ou confira todas as peças unisex.</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Tente selecionar outra categoria ou confira todas as peças unissex.</p>
               <button
                 onClick={() => setCategoryFilter('Todas')}
                 className="px-4 py-2 bg-neutral-950 dark:bg-white text-white dark:text-neutral-950 rounded-xl text-xs font-bold cursor-pointer"
@@ -718,10 +718,10 @@ export default function HomePage() {
         <section className="bg-white dark:bg-[#0a0b10] border-t border-neutral-200 dark:border-neutral-800 py-12 sm:py-16 transition-colors">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
             <span className="text-xs font-mono font-bold tracking-widest text-neutral-400 dark:text-neutral-500 uppercase">
-              CS CLOTHING STORE • COLEÇÃO CONTEMPORÂNEA UNISEX
+              CS CLOTHING STORE • COLEÇÃO CONTEMPORÂNEA UNISSEX
             </span>
             <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-neutral-950 dark:text-white tracking-tight max-w-xl mx-auto">
-              Roupas com acabamento impecável, estilo autoral e caimento unisex.
+              Roupas com acabamento impecável, estilo autoral e caimento unissex.
             </h3>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-lg mx-auto leading-relaxed">
               Confeccionadas com matérias-primas de alto padrão. O cálculo de frete é realizado de forma automática e transparente ao selecionar suas peças ou na finalização do pedido.
@@ -749,7 +749,7 @@ export default function HomePage() {
                     {siteSettings.storeName}
                   </span>
                   <span className="text-[10px] text-neutral-400 uppercase tracking-widest">
-                    Roupas & Moda Unisex
+                    Roupas & Moda Unissex
                   </span>
                 </div>
               </div>
@@ -771,7 +771,7 @@ export default function HomePage() {
                     }}
                     className="hover:text-neutral-950 dark:hover:text-white cursor-pointer"
                   >
-                    • ✨ Coleção Unisex
+                    • ✨ Coleção Unissex
                   </button>
                 </li>
                 {currentCategories.map((cat) => (

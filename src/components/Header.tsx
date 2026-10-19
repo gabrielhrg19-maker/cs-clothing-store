@@ -56,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {siteSettings.storeName}
               </span>
               <span className="block text-[8px] sm:text-[10px] tracking-[0.2em] text-neutral-500 dark:text-neutral-400 uppercase -mt-0.5 truncate">
-                Streetwear & Roupas Unisex
+                Streetwear & Roupas Unissex
               </span>
             </div>
           </a>
@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 bg-purple-50/60 dark:bg-purple-950/20'
               }`}
             >
-              ✨ Unisex
+              ✨ Unissex
             </button>
             {(siteSettings.categories || []).map((cat) => (
               <button
@@ -184,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
               : 'text-purple-700 dark:text-purple-300 bg-purple-100/60 dark:bg-purple-950/40'
           }`}
         >
-          ✨ Unisex
+          ✨ Unissex
         </button>
         {(siteSettings.categories || []).map((cat) => (
           <button

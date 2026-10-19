@@ -194,7 +194,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
     },
     {
       id: 'adv-2',
-      title: 'Coleção & Roupas Unisex',
+      title: 'Coleção & Roupas Unissex',
       description: 'Modelagens autênticas com caimento moderno e tecidos nobres para todos os estilos.',
       icon: 'sparkles',
       color: 'purple',
@@ -971,7 +971,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                         Catálogo de Peças & Roupas Cadastradas
                       </h4>
                       <p className="text-xs text-neutral-500">
-                        Gerencie preços, fotos, descrições e estoque de roupas e streetwear unisex.
+                        Gerencie preços, fotos, descrições e estoque de roupas e streetwear unissex.
                       </p>
                     </div>
 
@@ -1744,7 +1744,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                               type="text"
                               value={adv.title}
                               onChange={(e) => handleUpdateAdvantage(idx, 'title', e.target.value)}
-                              placeholder="Ex: Envio Oficial JADLOG, Coleção Unisex..."
+                              placeholder="Ex: Envio Oficial JADLOG, Coleção Unissex..."
                               className="w-full p-2 border border-neutral-300 rounded-lg text-xs font-bold bg-neutral-50 focus:bg-white"
                             />
                           </div>
@@ -2135,7 +2135,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                     <span className="font-black text-base uppercase tracking-wider block font-mono">
                       {siteSettings.storeName}
                     </span>
-                    <span className="text-[10px] text-neutral-600 block">Coleção & Roupas Unisex</span>
+                    <span className="text-[10px] text-neutral-600 block">Coleção & Roupas Unissex</span>
                   </div>
                   <div className="text-right">
                     <span className="inline-block bg-neutral-950 text-white text-[11px] font-black px-2.5 py-1 rounded uppercase tracking-wider">

@@ -26,7 +26,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = (storeData.siteSettings || {
     },
     {
       id: 'adv-2',
-      title: 'Coleção & Roupas Unisex',
+      title: 'Coleção & Roupas Unissex',
       description: 'Modelagens autênticas com caimento moderno e tecidos premium para todos os estilos.',
       icon: 'sparkles',
       color: 'purple',

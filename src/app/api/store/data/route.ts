@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { INITIAL_PRODUCTS, DEFAULT_SITE_SETTINGS } from '@/data/products';
 import { Product, SiteSettings, Order } from '@/types/store';
+import { getDatabase } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,11 +27,13 @@ const getDefaultData = (): StoreData => ({
 });
 
 /**
- * Salva base64 como arquivo físico em public/uploads para não inchar o JSON do banco
+ * Salva base64 como arquivo físico e/ou no MongoDB para não inchar o documento de produtos
  */
 async function offloadBase64Images(products: Product[]): Promise<Product[]> {
   try {
-    await fs.mkdir(UPLOADS_DIR, { recursive: true });
+    await fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(() => {});
+    const db = await getDatabase();
+
     return await Promise.all(
       products.map(async (prod, prodIdx) => {
         if (!Array.isArray(prod.images)) return prod;
@@ -45,8 +48,34 @@ async function offloadBase64Images(products: Product[]): Promise<Product[]> {
                   const ext = rawExt === 'jpeg' ? '.jpg' : `.${rawExt}`;
                   const buffer = Buffer.from(match[2], 'base64');
                   const filename = `prod-${Date.now()}-${prodIdx}-${imgIdx}${ext}`;
-                  const filePath = path.join(UPLOADS_DIR, filename);
-                  await fs.writeFile(filePath, buffer);
+
+                  // 1. Tenta salvar no disco local
+                  try {
+                    const filePath = path.join(UPLOADS_DIR, filename);
+                    await fs.writeFile(filePath, buffer);
+                  } catch {}
+
+                  // 2. Salva no MongoDB
+                  if (db) {
+                    try {
+                      await db.collection('uploads').updateOne(
+                        { filename },
+                        {
+                          $set: {
+                            filename,
+                            contentType: `image/${rawExt}`,
+                            data: buffer.toString('base64'),
+                            size: buffer.length,
+                            createdAt: new Date().toISOString(),
+                          },
+                        },
+                        { upsert: true }
+                      );
+                    } catch (dbErr) {
+                      console.warn('Erro ao salvar imagem no MongoDB:', dbErr);
+                    }
+                  }
+
                   return `/uploads/${filename}`;
                 }
               } catch (e) {
@@ -67,11 +96,53 @@ async function offloadBase64Images(products: Product[]): Promise<Product[]> {
 }
 
 /**
- * Lê os dados da loja com múltiplos níveis de segurança e backups.
- * NUNCA apaga dados em caso de erro!
+ * Lê os dados da loja:
+ * 1. Tenta primeiro no MongoDB (se conectado). Se for primeira vez, auto-popula com os dados locais.
+ * 2. Se MongoDB não estiver configurado, lê do arquivo local com proteção de backup.
  */
 async function readStoreData(): Promise<StoreData> {
-  // 1. Tenta ler o arquivo principal
+  // 1. Tenta ler do MongoDB
+  try {
+    const db = await getDatabase();
+    if (db) {
+      const doc = await db.collection('store_data').findOne({ _id: 'main' as any });
+      if (doc && (Array.isArray(doc.products) || doc.siteSettings)) {
+        return {
+          products: Array.isArray(doc.products) ? doc.products : INITIAL_PRODUCTS,
+          siteSettings: doc.siteSettings
+            ? { ...DEFAULT_SITE_SETTINGS, ...doc.siteSettings }
+            : DEFAULT_SITE_SETTINGS,
+          orders: Array.isArray(doc.orders) ? doc.orders : [],
+          lastUpdated: doc.lastUpdated || new Date().toISOString(),
+        };
+      }
+
+      // Se o MongoDB estiver conectado mas vazio (primeira vez), lê o local e sobe para o MongoDB
+      console.log('MongoDB vazio: inicializando banco com os dados existentes...');
+      const localData = await readLocalStoreData();
+      try {
+        await db.collection('store_data').updateOne(
+          { _id: 'main' as any },
+          { $set: { ...localData, lastUpdated: new Date().toISOString() } },
+          { upsert: true }
+        );
+      } catch (insertErr) {
+        console.warn('Erro ao popular MongoDB inicialmente:', insertErr);
+      }
+      return localData;
+    }
+  } catch (mongoErr) {
+    console.warn('Aviso: falha na conexão MongoDB, usando fallback local:', mongoErr);
+  }
+
+  // 2. Fallback local
+  return await readLocalStoreData();
+}
+
+/**
+ * Leitura de segurança do arquivo local
+ */
+async function readLocalStoreData(): Promise<StoreData> {
   try {
     const raw = await fs.readFile(DATA_FILE_PATH, 'utf-8');
     const parsed = JSON.parse(raw);
@@ -86,15 +157,13 @@ async function readStoreData(): Promise<StoreData> {
       };
     }
   } catch (err: any) {
-    console.warn('Aviso: Falha ao ler arquivo principal store-data.json, tentando backup...', err?.message);
+    console.warn('Aviso: Falha ao ler store-data.json, tentando backup...', err?.message);
   }
 
-  // 2. Tenta ler o arquivo de backup imediato se o principal falhou
   try {
     const rawBackup = await fs.readFile(BACKUP_FILE_PATH, 'utf-8');
     const parsedBackup = JSON.parse(rawBackup);
     if (parsedBackup && (Array.isArray(parsedBackup.products) || parsedBackup.siteSettings)) {
-      console.log('Recuperado com sucesso a partir de store-data.backup.json');
       return {
         products: Array.isArray(parsedBackup.products) ? parsedBackup.products : INITIAL_PRODUCTS,
         siteSettings: parsedBackup.siteSettings
@@ -104,79 +173,69 @@ async function readStoreData(): Promise<StoreData> {
         lastUpdated: parsedBackup.lastUpdated || new Date().toISOString(),
       };
     }
-  } catch (backupErr: any) {
-    console.warn('Aviso: Falha ao ler store-data.backup.json', backupErr?.message);
-  }
+  } catch (backupErr: any) {}
 
-  // 3. Somente se o arquivo realmente não existir pela primeira vez, inicializa sem destruir nada
-  const initial = getDefaultData();
-  try {
-    const dir = path.dirname(DATA_FILE_PATH);
-    await fs.mkdir(dir, { recursive: true });
-    // Só grava se o arquivo principal realmente não existir
-    try {
-      await fs.access(DATA_FILE_PATH);
-    } catch {
-      await fs.writeFile(DATA_FILE_PATH, JSON.stringify(initial, null, 2), 'utf-8');
-    }
-  } catch (initErr) {
-    console.error('Erro na inicialização de store-data.json:', initErr);
-  }
-  return initial;
+  return getDefaultData();
 }
 
 /**
- * Gravação Atômica Ultra-Segura com Criação de Backups
+ * Gravação Atômica: grava no MongoDB (se disponível) e no disco local
  */
 async function writeStoreData(data: StoreData): Promise<void> {
-  const dir = path.dirname(DATA_FILE_PATH);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.mkdir(BACKUPS_DIR, { recursive: true });
-
   const dataToSave: StoreData = {
     ...data,
     lastUpdated: new Date().toISOString(),
   };
 
-  const jsonString = JSON.stringify(dataToSave, null, 2);
-
-  // 1. Cria backup prévio do arquivo atual se ele existir
+  // 1. Salva no MongoDB para persistência definitiva em nuvem
   try {
-    const exists = await fs.access(DATA_FILE_PATH).then(() => true).catch(() => false);
-    if (exists) {
-      await fs.copyFile(DATA_FILE_PATH, BACKUP_FILE_PATH);
-
-      // Salva snapshot no histórico de backups (limitado aos 10 mais recentes)
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const historyFile = path.join(BACKUPS_DIR, `store-data-${timestamp}.json`);
-      await fs.copyFile(DATA_FILE_PATH, historyFile);
-
-      // Limpeza de backups antigos para não acumular
-      try {
-        const files = await fs.readdir(BACKUPS_DIR);
-        const jsonBackups = files.filter(f => f.startsWith('store-data-') && f.endsWith('.json')).sort();
-        if (jsonBackups.length > 10) {
-          for (const oldFile of jsonBackups.slice(0, jsonBackups.length - 10)) {
-            await fs.unlink(path.join(BACKUPS_DIR, oldFile)).catch(() => {});
-          }
-        }
-      } catch (cleanErr) {}
+    const db = await getDatabase();
+    if (db) {
+      await db.collection('store_data').updateOne(
+        { _id: 'main' as any },
+        {
+          $set: {
+            products: dataToSave.products,
+            siteSettings: dataToSave.siteSettings,
+            orders: dataToSave.orders,
+            lastUpdated: dataToSave.lastUpdated,
+          },
+        },
+        { upsert: true }
+      );
+      console.log('Dados salvos com sucesso no MongoDB Atlas!');
     }
-  } catch (backupErr) {
-    console.warn('Aviso ao gerar backup prévio:', backupErr);
+  } catch (mongoSaveErr) {
+    console.error('Erro ao salvar no MongoDB:', mongoSaveErr);
   }
 
-  // 2. Gravação atômica: primeiro grava em arquivo temporário (.tmp)
-  const tempFilePath = `${DATA_FILE_PATH}.tmp-${Date.now()}`;
-  await fs.writeFile(tempFilePath, jsonString, 'utf-8');
-
-  // 3. Move o arquivo temporário para o destino final (operação atômica que previne corrupção de arquivo)
+  // 2. Tenta salvar no disco local com backups (se ambiente permitir escrita)
   try {
-    await fs.rename(tempFilePath, DATA_FILE_PATH);
-  } catch (renameErr) {
-    // Fallback no Windows em caso de arquivo temporariamente em uso
-    await fs.copyFile(tempFilePath, DATA_FILE_PATH);
-    await fs.unlink(tempFilePath).catch(() => {});
+    const dir = path.dirname(DATA_FILE_PATH);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.mkdir(BACKUPS_DIR, { recursive: true }).catch(() => {});
+
+    const jsonString = JSON.stringify(dataToSave, null, 2);
+
+    // Backup
+    try {
+      const exists = await fs.access(DATA_FILE_PATH).then(() => true).catch(() => false);
+      if (exists) {
+        await fs.copyFile(DATA_FILE_PATH, BACKUP_FILE_PATH).catch(() => {});
+      }
+    } catch {}
+
+    const tempFilePath = `${DATA_FILE_PATH}.tmp-${Date.now()}`;
+    await fs.writeFile(tempFilePath, jsonString, 'utf-8');
+    try {
+      await fs.rename(tempFilePath, DATA_FILE_PATH);
+    } catch {
+      await fs.copyFile(tempFilePath, DATA_FILE_PATH);
+      await fs.unlink(tempFilePath).catch(() => {});
+    }
+  } catch (fsErr) {
+    // Em produção na Vercel (read-only filesystem), isso é esperado se não houver disco gravável
+    console.log('Escrita em disco ignorada (ambiente serverless/read-only).');
   }
 }
 
@@ -195,18 +254,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const current = await readStoreData();
 
-    // Reset com backup de emergência
+    // Reset
     if (body.reset) {
-      // Salva um backup explícito antes de qualquer reset
-      const resetBackupPath = path.join(BACKUPS_DIR, `pre-reset-${Date.now()}.json`);
-      await fs.writeFile(resetBackupPath, JSON.stringify(current, null, 2), 'utf-8').catch(() => {});
-
       const resetData = getDefaultData();
       await writeStoreData(resetData);
       return NextResponse.json({ success: true, ...resetData });
     }
 
-    // Se produtos foram enviados, descarrega imagens base64 para arquivos em /public/uploads
+    // Processa imagens base64 se houver
     let sanitizedProducts = current.products;
     if (Array.isArray(body.products)) {
       sanitizedProducts = await offloadBase64Images(body.products);

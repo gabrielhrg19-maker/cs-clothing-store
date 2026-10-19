@@ -12,7 +12,7 @@ export interface Product {
   name: string;
   subtitle: string;
   description: string;
-  gender: 'Masculino' | 'Feminino';
+  gender: 'Masculino' | 'Feminino' | 'Unissex';
   category: string;
   material: string;
   composition: string;

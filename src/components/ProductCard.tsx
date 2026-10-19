@@ -22,10 +22,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Imagem da Camisa */}
       <div className="relative aspect-4/5 bg-neutral-100 dark:bg-neutral-900 overflow-hidden">
         <Image
-          src={product.images[0]}
+          src={product.images?.[0] || '/cs-clothing-logo.png'}
           alt={product.name}
           fill
-          unoptimized={product.images[0]?.startsWith('data:')}
+          unoptimized={product.images?.[0]?.startsWith('data:')}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
@@ -36,7 +36,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm backdrop-blur-md ${
               product.gender === 'Masculino'
                 ? 'bg-blue-100/95 dark:bg-blue-950/90 text-blue-900 dark:text-blue-200 border border-blue-300 dark:border-blue-800'
-                : 'bg-rose-100/95 dark:bg-rose-950/90 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-800'
+                : product.gender === 'Feminino'
+                ? 'bg-rose-100/95 dark:bg-rose-950/90 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-800'
+                : 'bg-purple-100/95 dark:bg-purple-950/90 text-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-800'
             }`}
           >
             {product.gender}

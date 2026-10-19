@@ -46,7 +46,7 @@ export default function HomePage() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   // Filtros
-  const [genderFilter, setGenderFilter] = useState<'Todos' | 'Masculino' | 'Feminino'>('Todos');
+  const [genderFilter, setGenderFilter] = useState<'Todos' | 'Masculino' | 'Feminino' | 'Unissex'>('Todos');
   const [categoryFilter, setCategoryFilter] = useState<string>('Todas');
 
   // Sacola e Modais
@@ -533,6 +533,17 @@ export default function HomePage() {
                     👗 Camisas Femininas
                   </button>
 
+                  <button
+                    onClick={() => {
+                      setGenderFilter('Unissex');
+                      const el = document.getElementById('catalogo');
+                      el?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-3.5 sm:px-4 py-3 sm:py-3.5 bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  >
+                    ✨ Roupas Unissex
+                  </button>
+
                   {isAdminLoggedIn && (
                     <button
                       onClick={() => setIsAdminCMSOpen(true)}
@@ -653,10 +664,12 @@ export default function HomePage() {
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-neutral-950 dark:text-white tracking-tight mt-1">
                 {genderFilter === 'Todos'
-                  ? 'Todas as Camisas'
+                  ? 'Todas as Peças da Loja'
                   : genderFilter === 'Masculino'
                   ? 'Camisas Masculinas'
-                  : 'Camisas Femininas'}
+                  : genderFilter === 'Feminino'
+                  ? 'Camisas & Blusas Femininas'
+                  : 'Roupas & Camisas Unissex'}
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Exibindo {filteredProducts.length} modelo(s) com pronta entrega e envio rápido para todo o Brasil.
@@ -690,6 +703,14 @@ export default function HomePage() {
                   }`}
                 >
                   Femininas
+                </button>
+                <button
+                  onClick={() => setGenderFilter('Unissex')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    genderFilter === 'Unissex' ? 'bg-white dark:bg-purple-950 text-purple-900 dark:text-purple-300 shadow-xs' : 'text-neutral-600 dark:text-neutral-400'
+                  }`}
+                >
+                  ✨ Unissex
                 </button>
               </div>
 
@@ -810,6 +831,11 @@ export default function HomePage() {
                 <li>
                   <button onClick={() => setGenderFilter('Feminino')} className="hover:text-neutral-950 dark:hover:text-white cursor-pointer">
                     • Camisas Femininas
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setGenderFilter('Unissex')} className="hover:text-neutral-950 dark:hover:text-white cursor-pointer">
+                    • Roupas Unissex
                   </button>
                 </li>
                 <li>

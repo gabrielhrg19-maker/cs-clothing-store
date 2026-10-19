@@ -35,7 +35,7 @@ import {
   Printer,
   Copy,
 } from 'lucide-react';
-import { Product, SiteSettings, Order, StoreAdvantage } from '../types/store';
+import { Product, ProductVariant, SiteSettings, Order, StoreAdvantage } from '../types/store';
 import {
   AVAILABLE_ICONS,
   AVAILABLE_COLORS,
@@ -323,48 +323,106 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
 
   const currentCategories = tempSettings.categories || ['Camisa Social', 'Camisa Linho', 'Camisa Casual', 'Camisa Polo'];
 
-  // Estado para novo produto
-  const emptyNewProduct: Product = {
-    id: `cs-${Date.now()}`,
-    name: '',
-    subtitle: '',
-    description: '',
-    gender: 'Masculino',
-    category: currentCategories[0] || 'Camisa Social',
-    material: 'Algodão Nobre',
-    composition: '100% Algodão',
-    weightGrams: 280,
-    packageDimensions: { lengthCm: 32, widthCm: 24, heightCm: 3 },
-    priceBRL: 199.90,
-    images: ['https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1000&q=80'],
-    variants: [
-      { id: `v-${Date.now()}-p`, size: 'P', color: 'Branco', stock: 10 },
-      { id: `v-${Date.now()}-m`, size: 'M', color: 'Branco', stock: 15 },
-      { id: `v-${Date.now()}-g`, size: 'G', color: 'Branco', stock: 12 },
-      { id: `v-${Date.now()}-gg`, size: 'GG', color: 'Branco', stock: 6 },
-    ],
-    tag: 'Novidade',
+  // Função para instanciar um novo produto limpo e com ID único dinâmico
+  const createNewEmptyProduct = (): Product => {
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 7);
+    return {
+      id: `cs-${timestamp}-${randomSuffix}`,
+      name: '',
+      subtitle: '',
+      description: '',
+      gender: 'Unissex',
+      category: currentCategories[0] || 'Camisa Social',
+      material: 'Algodão Nobre',
+      composition: '100% Algodão',
+      weightGrams: 280,
+      packageDimensions: { lengthCm: 32, widthCm: 24, heightCm: 3 },
+      priceBRL: 199.90,
+      images: ['/cs-clothing-logo.png'],
+      variants: [
+        { id: `v-${timestamp}-p`, size: 'P', color: 'Padrão', stock: 10 },
+        { id: `v-${timestamp}-m`, size: 'M', color: 'Padrão', stock: 15 },
+        { id: `v-${timestamp}-g`, size: 'G', color: 'Padrão', stock: 12 },
+        { id: `v-${timestamp}-gg`, size: 'GG', color: 'Padrão', stock: 6 },
+      ],
+      tag: 'Novidade',
+    };
   };
 
   const handleStartCreate = () => {
-    setEditingProduct(emptyNewProduct);
+    setEditingProduct(createNewEmptyProduct());
     setIsCreatingNew(true);
   };
 
   const handleStartEdit = (prod: Product) => {
-    setEditingProduct({ ...prod });
+    setEditingProduct({
+      ...prod,
+      images: Array.isArray(prod.images) && prod.images.length > 0 ? [...prod.images] : ['/cs-clothing-logo.png'],
+      variants: Array.isArray(prod.variants) && prod.variants.length > 0 ? prod.variants.map((v) => ({ ...v })) : [
+        { id: `v-${Date.now()}-p`, size: 'P', color: 'Padrão', stock: 10 },
+        { id: `v-${Date.now()}-m`, size: 'M', color: 'Padrão', stock: 15 },
+        { id: `v-${Date.now()}-g`, size: 'G', color: 'Padrão', stock: 12 },
+        { id: `v-${Date.now()}-gg`, size: 'GG', color: 'Padrão', stock: 6 },
+      ],
+    });
     setIsCreatingNew(false);
   };
 
   const handleSaveProductForm = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingProduct || !editingProduct.name) return;
+    if (!editingProduct) return;
+
+    const trimmedName = editingProduct.name.trim();
+    if (!trimmedName) {
+      alert('Por favor, informe o nome da camisa/peça antes de salvar.');
+      return;
+    }
+
+    // Suporte a preços digitados com vírgula (formato brasileiro: 199,90) ou ponto (199.90)
+    let parsedPrice: number;
+    if (typeof editingProduct.priceBRL === 'string') {
+      parsedPrice = parseFloat(String(editingProduct.priceBRL).replace(',', '.'));
+    } else {
+      parsedPrice = Number(editingProduct.priceBRL);
+    }
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      parsedPrice = 99.90;
+    }
+
+    const firstImage = editingProduct.images?.[0]?.trim() || '/cs-clothing-logo.png';
+    const finalImages = [firstImage];
+
+    const finalVariants: ProductVariant[] = Array.isArray(editingProduct.variants) && editingProduct.variants.length > 0
+      ? editingProduct.variants
+      : [
+          { id: `v-${Date.now()}-p`, size: 'P' as const, color: 'Padrão', stock: 10 },
+          { id: `v-${Date.now()}-m`, size: 'M' as const, color: 'Padrão', stock: 15 },
+          { id: `v-${Date.now()}-g`, size: 'G' as const, color: 'Padrão', stock: 12 },
+          { id: `v-${Date.now()}-gg`, size: 'GG' as const, color: 'Padrão', stock: 6 },
+        ];
+
+    const safeProduct: Product = {
+      ...editingProduct,
+      id: isCreatingNew
+        ? (editingProduct.id || `cs-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`)
+        : editingProduct.id,
+      name: trimmedName,
+      priceBRL: parsedPrice,
+      images: finalImages,
+      variants: finalVariants,
+      weightGrams: Number(editingProduct.weightGrams) || 250,
+      gender: editingProduct.gender || 'Unissex',
+      category: editingProduct.category || currentCategories[0] || 'Camisa Social',
+    };
 
     let updatedList: Product[];
     if (isCreatingNew) {
-      updatedList = [editingProduct, ...products];
+      // Remove qualquer colisão anterior por id
+      const filtered = products.filter((p) => p.id !== safeProduct.id);
+      updatedList = [safeProduct, ...filtered];
     } else {
-      updatedList = products.map((p) => (p.id === editingProduct.id ? editingProduct : p));
+      updatedList = products.map((p) => (p.id === safeProduct.id ? safeProduct : p));
     }
 
     onSaveProducts(updatedList);
@@ -627,7 +685,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                         <ImageIcon className="w-4 h-4 text-emerald-600" />
                         Foto da Camisa (Upload ou Link):
                       </span>
-                      {editingProduct.images[0] && (
+                      {editingProduct.images?.[0] && (
                         <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
                           <Check className="w-3.5 h-3.5" /> Foto pronta
                         </span>
@@ -637,7 +695,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                     <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
                       {/* Miniatura / Preview da Imagem */}
                       <div className="relative w-28 h-36 bg-neutral-200 rounded-xl overflow-hidden border-2 border-dashed border-neutral-300 shrink-0 flex items-center justify-center shadow-xs">
-                        {editingProduct.images[0] ? (
+                        {editingProduct.images?.[0] ? (
                           <Image
                             src={editingProduct.images[0]}
                             alt="Preview da Camisa"
@@ -737,12 +795,16 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                     <div>
                       <label className="font-bold text-neutral-700 block mb-1">Preço em Reais (R$):</label>
                       <input
-                        type="number"
-                        step="0.01"
+                        type="text"
+                        inputMode="decimal"
                         required
                         value={editingProduct.priceBRL}
-                        onChange={(e) => setEditingProduct({ ...editingProduct, priceBRL: parseFloat(e.target.value) || 0 })}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9.,]/g, '');
+                          setEditingProduct({ ...editingProduct, priceBRL: val as any });
+                        }}
                         className="w-full p-2.5 border border-neutral-300 rounded-xl bg-neutral-50 focus:bg-white font-mono"
+                        placeholder="Ex: 199,90"
                       />
                     </div>
                   </div>
@@ -755,6 +817,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                         onChange={(e) => setEditingProduct({ ...editingProduct, gender: e.target.value as any })}
                         className="w-full p-2.5 border border-neutral-300 rounded-xl bg-neutral-50 focus:bg-white font-medium"
                       >
+                        <option value="Unissex">✨ Roupa / Camisa Unissex (Para Todos)</option>
                         <option value="Masculino">Camisa Masculina</option>
                         <option value="Feminino">Camisa Feminina</option>
                       </select>
@@ -843,6 +906,46 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                     </div>
                   </div>
 
+                  {/* Grade de Estoque por Tamanho */}
+                  <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200 space-y-3">
+                    <label className="font-bold text-neutral-800 block text-xs">
+                      Estoque por Tamanho (Unidades disponíveis para venda):
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {(['P', 'M', 'G', 'GG'] as const).map((size) => {
+                        const variant = editingProduct.variants?.find((v) => v.size === size);
+                        const stockVal = variant !== undefined ? variant.stock : 0;
+                        return (
+                          <div key={size} className="bg-white p-2.5 rounded-xl border border-neutral-200 flex items-center justify-between">
+                            <span className="font-black text-xs text-neutral-800">Tam {size}:</span>
+                            <input
+                              type="number"
+                              min="0"
+                              value={stockVal}
+                              onChange={(e) => {
+                                const newStock = Math.max(0, parseInt(e.target.value) || 0);
+                                const existingVariants = editingProduct.variants ? [...editingProduct.variants] : [];
+                                const index = existingVariants.findIndex((v) => v.size === size);
+                                if (index >= 0) {
+                                  existingVariants[index] = { ...existingVariants[index], stock: newStock };
+                                } else {
+                                  existingVariants.push({
+                                    id: `v-${Date.now()}-${size.toLowerCase()}`,
+                                    size,
+                                    color: 'Padrão',
+                                    stock: newStock,
+                                  });
+                                }
+                                setEditingProduct({ ...editingProduct, variants: existingVariants });
+                              }}
+                              className="w-16 p-1 border border-neutral-300 rounded-lg text-center font-mono font-bold text-xs"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   <div className="pt-3 border-t border-neutral-200 flex justify-end gap-3">
                     <button
                       type="button"
@@ -869,7 +972,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                         Catálogo de Camisas Cadastradas
                       </h4>
                       <p className="text-xs text-neutral-500">
-                        Você pode editar preços, fotos (upload direto), descrições ou cadastrar novas camisas masculinas e femininas.
+                        Você pode editar preços, fotos (upload direto), descrições ou cadastrar novas camisas masculinas, femininas e unissex.
                       </p>
                     </div>
 
@@ -890,10 +993,10 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                       >
                         <div className="relative w-20 h-24 bg-neutral-100 rounded-xl overflow-hidden shrink-0 border border-neutral-200">
                           <Image
-                            src={prod.images[0]}
+                            src={prod.images?.[0] || '/cs-clothing-logo.png'}
                             alt={prod.name}
                             fill
-                            unoptimized={prod.images[0]?.startsWith('data:')}
+                            unoptimized={prod.images?.[0]?.startsWith('data:')}
                             className="object-cover"
                           />
                         </div>
@@ -902,9 +1005,13 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                           <div>
                             <div className="flex items-center gap-1.5">
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                                prod.gender === 'Masculino' ? 'bg-blue-100 text-blue-800' : 'bg-rose-100 text-rose-800'
+                                prod.gender === 'Masculino'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : prod.gender === 'Feminino'
+                                  ? 'bg-rose-100 text-rose-800'
+                                  : 'bg-purple-100 text-purple-800'
                               }`}>
-                                {prod.gender}
+                                {prod.gender === 'Unissex' ? '✨ Unissex' : prod.gender}
                               </span>
                               <span className="text-[10px] text-neutral-400">•</span>
                               <span className="text-[10px] text-neutral-600 font-bold bg-neutral-100 px-2 py-0.5 rounded-md">

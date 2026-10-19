@@ -54,10 +54,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           {/* Fotos do Produto */}
           <div className="bg-neutral-100 dark:bg-neutral-900 relative min-h-[300px] sm:min-h-[380px] md:min-h-[520px]">
             <Image
-              src={product.images[0]}
+              src={product.images?.[0] || '/cs-clothing-logo.png'}
               alt={product.name}
               fill
-              unoptimized={product.images[0]?.startsWith('data:')}
+              unoptimized={product.images?.[0]?.startsWith('data:')}
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
             />
@@ -76,9 +76,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-1.5">
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
-                  product.gender === 'Masculino' ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300' : 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300'
+                  product.gender === 'Masculino'
+                    ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300'
+                    : product.gender === 'Feminino'
+                    ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300'
+                    : 'bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300'
                 }`}>
-                  Camisa {product.gender}
+                  {product.gender === 'Unissex' ? '✨ Roupa Unissex' : `Camisa ${product.gender}`}
                 </span>
                 <span className="text-neutral-300 dark:text-neutral-700">•</span>
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
@@ -126,15 +130,15 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     className="text-xs text-neutral-900 dark:text-neutral-300 hover:text-neutral-700 dark:hover:text-white underline font-semibold flex items-center gap-1 cursor-pointer"
                   >
                     <Ruler className="w-3.5 h-3.5" />
-                    {showSizeGuide ? 'Ocultar Medidas' : 'Guia de Camisaria'}
+                    {showSizeGuide ? 'Ocultar Medidas' : 'Guia de Medidas'}
                   </button>
                 </div>
 
-                {/* Tabela de Camisaria */}
+                {/* Tabela de Medidas */}
                 {showSizeGuide && (
                   <div className="p-3 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 mb-3 text-xs animate-in fade-in">
                     <div className="font-bold text-neutral-800 dark:text-neutral-200 mb-1">
-                      Medidas Corporais ({product.gender === 'Masculino' ? 'Camisas Masculinas' : 'Camisas Femininas'}):
+                      Medidas Corporais ({product.gender === 'Masculino' ? 'Modelagem Masculina' : product.gender === 'Feminino' ? 'Modelagem Feminina' : 'Modelagem Unissex (Caimento Regular)'}):
                     </div>
                     <table className="w-full text-center border-collapse">
                       <thead>
@@ -153,12 +157,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                             <tr><td className="py-1 font-bold">G</td><td>114 cm</td><td>76 cm</td><td>66 cm</td></tr>
                             <tr><td className="py-1 font-bold">GG</td><td>120 cm</td><td>78 cm</td><td>67 cm</td></tr>
                           </>
-                        ) : (
+                        ) : product.gender === 'Feminino' ? (
                           <>
                             <tr><td className="py-1 font-bold">PP</td><td>92 cm</td><td>66 cm</td><td>59 cm</td></tr>
                             <tr><td className="py-1 font-bold">P</td><td>98 cm</td><td>68 cm</td><td>60 cm</td></tr>
                             <tr><td className="py-1 font-bold">M</td><td>104 cm</td><td>70 cm</td><td>61 cm</td></tr>
                             <tr><td className="py-1 font-bold">G</td><td>110 cm</td><td>72 cm</td><td>62 cm</td></tr>
+                          </>
+                        ) : (
+                          <>
+                            <tr><td className="py-1 font-bold">P</td><td>104 cm</td><td>70 cm</td><td>62 cm</td></tr>
+                            <tr><td className="py-1 font-bold">M</td><td>110 cm</td><td>73 cm</td><td>64 cm</td></tr>
+                            <tr><td className="py-1 font-bold">G</td><td>116 cm</td><td>75 cm</td><td>65 cm</td></tr>
+                            <tr><td className="py-1 font-bold">GG</td><td>122 cm</td><td>77 cm</td><td>66 cm</td></tr>
                           </>
                         )}
                       </tbody>

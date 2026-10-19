@@ -16,8 +16,8 @@ interface HeaderProps {
   onOpenCart: () => void;
   onOpenAdmin: () => void;
   onOpenLogisticsInfo?: () => void;
-  onSelectGenderFilter: (gender: 'Todos' | 'Masculino' | 'Feminino') => void;
-  currentGenderFilter: 'Todos' | 'Masculino' | 'Feminino';
+  onSelectGenderFilter: (gender: 'Todos' | 'Masculino' | 'Feminino' | 'Unissex') => void;
+  currentGenderFilter: 'Todos' | 'Masculino' | 'Feminino' | 'Unissex';
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -90,6 +90,16 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               👗 Femininas
+            </button>
+            <button
+              onClick={() => onSelectGenderFilter('Unissex')}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                currentGenderFilter === 'Unissex'
+                  ? 'bg-purple-900 text-white shadow-sm'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-purple-900 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40'
+              }`}
+            >
+              ✨ Unissex
             </button>
           </nav>
         </div>
@@ -198,6 +208,16 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           👗 Femininas
+        </button>
+        <button
+          onClick={() => onSelectGenderFilter('Unissex')}
+          className={`px-3 py-1 rounded-lg shrink-0 transition-all cursor-pointer ${
+            currentGenderFilter === 'Unissex'
+              ? 'bg-purple-900 text-white'
+              : 'text-neutral-600 dark:text-neutral-400 hover:bg-purple-50 dark:hover:bg-purple-950/40'
+          }`}
+        >
+          ✨ Unissex
         </button>
       </div>
     </header>

@@ -26,10 +26,10 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = (storeData.siteSettings || {
     },
     {
       id: 'adv-2',
-      title: 'Camisaria Especializada',
-      description: 'Modelagens masculinas e femininas com tecidos nobres e acabamento alfaiataria.',
-      icon: 'shirt',
-      color: 'blue',
+      title: 'Coleção & Roupas Unisex',
+      description: 'Modelagens autênticas com caimento moderno e tecidos premium para todos os estilos.',
+      icon: 'sparkles',
+      color: 'purple',
       enabled: true,
     },
     {

@@ -503,13 +503,17 @@ export default function HomePage() {
 
                 {/* Botões de Ação de Alta Qualidade */}
                 <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-2 sm:pt-3">
-                  <a
-                    href="#catalogo"
-                    className="px-5 sm:px-6 py-3 sm:py-3.5 bg-neutral-950 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg dark:shadow-[0_10px_30px_rgba(255,255,255,0.15)] flex items-center gap-2 cursor-pointer active:scale-95"
+                  <button
+                    onClick={() => {
+                      setGenderFilter('Unissex');
+                      const el = document.getElementById('catalogo');
+                      el?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-5 sm:px-6 py-3 sm:py-3.5 bg-purple-900 hover:bg-purple-800 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center gap-2 cursor-pointer active:scale-95"
                   >
-                    <span>Ver Coleção de Camisas</span>
+                    <span>✨ Ver Coleção Unisex</span>
                     <ArrowRight className="w-4 h-4" />
-                  </a>
+                  </button>
 
                   <button
                     onClick={() => {
@@ -519,7 +523,7 @@ export default function HomePage() {
                     }}
                     className="px-3.5 sm:px-4 py-3 sm:py-3.5 bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
                   >
-                    👔 Camisas Masculinas
+                    👔 Masculinas
                   </button>
 
                   <button
@@ -530,18 +534,18 @@ export default function HomePage() {
                     }}
                     className="px-3.5 sm:px-4 py-3 sm:py-3.5 bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
                   >
-                    👗 Camisas Femininas
+                    👗 Femininas
                   </button>
 
                   <button
                     onClick={() => {
-                      setGenderFilter('Unissex');
+                      setGenderFilter('Todos');
                       const el = document.getElementById('catalogo');
                       el?.scrollIntoView({ behavior: 'smooth' });
                     }}
                     className="px-3.5 sm:px-4 py-3 sm:py-3.5 bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
                   >
-                    ✨ Roupas Unissex
+                    Todas as Peças
                   </button>
 
                   {isAdminLoggedIn && (
@@ -663,13 +667,13 @@ export default function HomePage() {
                 )}
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-neutral-950 dark:text-white tracking-tight mt-1">
-                {genderFilter === 'Todos'
-                  ? 'Todas as Peças da Loja'
+                {genderFilter === 'Unissex'
+                  ? '✨ Roupas & Streetwear Unisex'
                   : genderFilter === 'Masculino'
-                  ? 'Camisas Masculinas'
+                  ? 'Roupas & Camisas Masculinas'
                   : genderFilter === 'Feminino'
-                  ? 'Camisas & Blusas Femininas'
-                  : 'Roupas & Camisas Unissex'}
+                  ? 'Roupas & Camisas Femininas'
+                  : 'Todas as Peças da Loja'}
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Exibindo {filteredProducts.length} modelo(s) com pronta entrega e envio rápido para todo o Brasil.
@@ -681,12 +685,14 @@ export default function HomePage() {
               {/* Botões de Gênero */}
               <div className="flex bg-neutral-200 dark:bg-[#13141f] p-1 rounded-xl text-xs font-bold border border-transparent dark:border-neutral-800">
                 <button
-                  onClick={() => setGenderFilter('Todos')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    genderFilter === 'Todos' ? 'bg-white dark:bg-[#202230] text-neutral-950 dark:text-white shadow-xs' : 'text-neutral-600 dark:text-neutral-400'
+                  onClick={() => setGenderFilter('Unissex')}
+                  className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 font-bold ${
+                    genderFilter === 'Unissex'
+                      ? 'bg-purple-900 text-white shadow-xs'
+                      : 'text-purple-800 dark:text-purple-300 hover:bg-purple-100/50 dark:hover:bg-purple-950/40'
                   }`}
                 >
-                  Todas
+                  ✨ Unisex
                 </button>
                 <button
                   onClick={() => setGenderFilter('Masculino')}
@@ -705,12 +711,12 @@ export default function HomePage() {
                   Femininas
                 </button>
                 <button
-                  onClick={() => setGenderFilter('Unissex')}
+                  onClick={() => setGenderFilter('Todos')}
                   className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    genderFilter === 'Unissex' ? 'bg-white dark:bg-purple-950 text-purple-900 dark:text-purple-300 shadow-xs' : 'text-neutral-600 dark:text-neutral-400'
+                    genderFilter === 'Todos' ? 'bg-white dark:bg-[#202230] text-neutral-950 dark:text-white shadow-xs' : 'text-neutral-600 dark:text-neutral-400'
                   }`}
                 >
-                  ✨ Unissex
+                  Todas as Peças
                 </button>
               </div>
 
@@ -778,10 +784,10 @@ export default function HomePage() {
         <section className="bg-white dark:bg-[#0a0b10] border-t border-neutral-200 dark:border-neutral-800 py-12 sm:py-16 transition-colors">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
             <span className="text-xs font-mono font-bold tracking-widest text-neutral-400 dark:text-neutral-500 uppercase">
-              CS CLOTHING STORE • CAMISARIA CONTEMPORÂNEA
+              CS CLOTHING STORE • COLEÇÃO CONTEMPORÂNEA UNISEX
             </span>
             <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-neutral-950 dark:text-white tracking-tight max-w-xl mx-auto">
-              Camisas com acabamento impecável e caimento autoral.
+              Roupas com acabamento impecável, estilo autoral e caimento unisex.
             </h3>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-lg mx-auto leading-relaxed">
               Confeccionadas com matérias-primas de alto padrão. O cálculo de frete é realizado de forma automática e transparente ao selecionar suas peças ou na finalização do pedido.
@@ -809,12 +815,12 @@ export default function HomePage() {
                     {siteSettings.storeName}
                   </span>
                   <span className="text-[10px] text-neutral-400 uppercase tracking-widest">
-                    Camisaria Fina
+                    Roupas & Moda Unisex
                   </span>
                 </div>
               </div>
               <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                Marca especializada em camisas masculinas e femininas de alto padrão com acabamento de alfaiataria fina.
+                Marca especializada em streetwear e peças autorais de alto padrão com caimento autêntico e roupas unissex para todos.
               </p>
             </div>
 

@@ -76,6 +76,7 @@ export const AdminCMSModal: React.FC<AdminCMSModalProps> = ({
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'sales' | 'settings' | 'orders'>('sales');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [adminGenderFilter, setAdminGenderFilter] = useState<'Todos' | 'Masculino' | 'Feminino' | 'Unissex'>('Todos');
   const [tempSettings, setTempSettings] = useState<SiteSettings>({ ...siteSettings });
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
@@ -193,10 +194,10 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
     },
     {
       id: 'adv-2',
-      title: 'Camisaria Especializada',
-      description: 'Modelagens masculinas e femininas com tecidos nobres e acabamento alfaiataria.',
+      title: 'Coleção & Roupas Unisex',
+      description: 'Modelagens autênticas com caimento moderno e tecidos nobres para todos os estilos.',
       icon: 'sparkles',
-      color: 'blue',
+      color: 'purple',
       enabled: true,
     },
     {
@@ -256,7 +257,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
     const newAdv: StoreAdvantage = {
       id: `adv-${Date.now()}`,
       title: 'Nova Vantagem CS',
-      description: 'Benefício exclusivo da camisaria para clientes de todo o Brasil.',
+      description: 'Benefício exclusivo da loja para clientes de todo o Brasil.',
       icon: 'shirt',
       color: 'blue',
       enabled: true,
@@ -604,7 +605,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
             }`}
           >
             <ShoppingBag className="w-4 h-4" />
-            Camisas & Catálogo ({products.length})
+            Catálogo & Peças ({products.length})
           </button>
 
           <button
@@ -969,10 +970,10 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
                       <h4 className="font-bold text-sm text-neutral-900">
-                        Catálogo de Camisas Cadastradas
+                        Catálogo de Peças & Roupas Cadastradas
                       </h4>
                       <p className="text-xs text-neutral-500">
-                        Você pode editar preços, fotos (upload direto), descrições ou cadastrar novas camisas masculinas, femininas e unissex.
+                        Gerencie preços, fotos, descrições e estoque de roupas unisex, masculinas e femininas.
                       </p>
                     </div>
 
@@ -980,13 +981,86 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                       onClick={handleStartCreate}
                       className="px-4 py-2.5 bg-neutral-950 text-white rounded-xl font-bold text-xs hover:bg-neutral-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-md"
                     >
-                      <Plus className="w-4 h-4" />
-                      Adicionar Nova Camisa
+                      <Plus className="w-4 h-4 text-emerald-400" />
+                      + Cadastrar Nova Peça
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {products.map((prod) => (
+                  {/* Abas Rápidas de Filtro por Categoria / Gênero no Painel */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-neutral-100 rounded-2xl border border-neutral-200">
+                    <div className="flex flex-wrap gap-1.5 items-center">
+                      <button
+                        type="button"
+                        onClick={() => setAdminGenderFilter('Unissex')}
+                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                          adminGenderFilter === 'Unissex'
+                            ? 'bg-purple-900 text-white shadow-xs'
+                            : 'bg-white text-purple-800 hover:bg-purple-50 border border-purple-200'
+                        }`}
+                      >
+                        ✨ Roupas Unisex ({products.filter((p) => p.gender === 'Unissex').length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdminGenderFilter('Masculino')}
+                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                          adminGenderFilter === 'Masculino'
+                            ? 'bg-blue-900 text-white shadow-xs'
+                            : 'bg-white text-neutral-700 hover:bg-neutral-50 border border-neutral-200'
+                        }`}
+                      >
+                        👔 Masculinas ({products.filter((p) => p.gender === 'Masculino').length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdminGenderFilter('Feminino')}
+                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                          adminGenderFilter === 'Feminino'
+                            ? 'bg-rose-900 text-white shadow-xs'
+                            : 'bg-white text-neutral-700 hover:bg-neutral-50 border border-neutral-200'
+                        }`}
+                      >
+                        👗 Femininas ({products.filter((p) => p.gender === 'Feminino').length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdminGenderFilter('Todos')}
+                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                          adminGenderFilter === 'Todos'
+                            ? 'bg-neutral-900 text-white shadow-xs'
+                            : 'bg-white text-neutral-700 hover:bg-neutral-50 border border-neutral-200'
+                        }`}
+                      >
+                        Todas as Peças ({products.length})
+                      </button>
+                    </div>
+                  </div>
+
+                  {products.filter((p) => adminGenderFilter === 'Todos' || p.gender === adminGenderFilter).length === 0 ? (
+                    <div className="text-center py-12 bg-white rounded-2xl border border-neutral-200 space-y-3">
+                      <p className="text-sm font-bold text-neutral-700">
+                        Nenhuma peça encontrada na aba &quot;{adminGenderFilter}&quot;.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleStartCreate();
+                          if (adminGenderFilter === 'Unissex') {
+                            setTimeout(() => {
+                              setEditingProduct((prev) => prev ? { ...prev, gender: 'Unissex' } : prev);
+                            }, 10);
+                          }
+                        }}
+                        className="px-4 py-2 bg-purple-900 hover:bg-purple-800 text-white font-bold text-xs rounded-xl cursor-pointer"
+                      >
+                        + Cadastrar Peça {adminGenderFilter === 'Unissex' ? 'Unisex' : ''}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {products
+                        .filter((p) => adminGenderFilter === 'Todos' || p.gender === adminGenderFilter)
+                        .map((prod) => (
                       <div
                         key={prod.id}
                         className="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex gap-4 items-start"
@@ -1047,6 +1121,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                       </div>
                     ))}
                   </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1703,7 +1778,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                               type="text"
                               value={adv.title}
                               onChange={(e) => handleUpdateAdvantage(idx, 'title', e.target.value)}
-                              placeholder="Ex: Envio Oficial JADLOG, Camisaria Fina..."
+                              placeholder="Ex: Envio Oficial JADLOG, Coleção Unisex..."
                               className="w-full p-2 border border-neutral-300 rounded-lg text-xs font-bold bg-neutral-50 focus:bg-white"
                             />
                           </div>
@@ -2094,7 +2169,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                     <span className="font-black text-base uppercase tracking-wider block font-mono">
                       {siteSettings.storeName}
                     </span>
-                    <span className="text-[10px] text-neutral-600 block">Camisaria Especializada</span>
+                    <span className="text-[10px] text-neutral-600 block">Coleção & Roupas Unisex</span>
                   </div>
                   <div className="text-right">
                     <span className="inline-block bg-neutral-950 text-white text-[11px] font-black px-2.5 py-1 rounded uppercase tracking-wider">

@@ -389,10 +389,10 @@
     {
       "id": "cs-1791957640462",
       "name": "nba",
-      "subtitle": "",
-      "description": "",
-      "gender": "Masculino",
-      "category": "Camisa Social",
+      "subtitle": "Edição Especial Streetwear & Esporte",
+      "description": "Peça exclusiva com caimento unissex autêntico e acabamento reforçado. Pronta entrega com despacho Jadlog.",
+      "gender": "Unissex",
+      "category": "Camisa Casual",
       "material": "Algodão Nobre",
       "composition": "100% Algodão",
       "weightGrams": 280,
@@ -431,15 +431,69 @@
           "stock": 6
         }
       ],
-      "tag": "Novidade"
+      "tag": "Destaque Unisex"
+    },
+    {
+      "id": "cs-u-01",
+      "name": "Camiseta Oversized Streetwear Unisex",
+      "subtitle": "Algodão Penteado Heavy 260g com Caimento Boxy",
+      "description": "Camiseta streetwear unissex com modelagem oversized moderna e caimento estruturado. Tecido encorpado de alta durabilidade, gola canelada de 3cm e costuras reforçadas ombro a ombro.",
+      "gender": "Unissex",
+      "category": "Camisa Casual",
+      "material": "Algodão Heavy 260g",
+      "composition": "100% Algodão Penteado",
+      "weightGrams": 280,
+      "packageDimensions": {
+        "lengthCm": 32,
+        "widthCm": 24,
+        "heightCm": 3
+      },
+      "priceBRL": 169.9,
+      "images": [
+        "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "variants": [
+        { "id": "u1-p", "size": "P", "color": "Off-White", "stock": 15 },
+        { "id": "u1-m", "size": "M", "color": "Off-White", "stock": 25 },
+        { "id": "u1-g", "size": "G", "color": "Off-White", "stock": 20 },
+        { "id": "u1-gg", "size": "GG", "color": "Off-White", "stock": 10 }
+      ],
+      "tag": "Mais Vendida Unisex"
+    },
+    {
+      "id": "cs-u-02",
+      "name": "Blusa Moletom Classic Crewneck Unisex",
+      "subtitle": "Moletom Peluciado 340g com Toque Soft Aveludado",
+      "description": "Blusa moletom unissex gola careca com acabamento premium. Interior flanelado macio que mantém o conforto térmico, punhos e barra em ribana elástica.",
+      "gender": "Unissex",
+      "category": "Camisa Casual",
+      "material": "Moletom 3 Cabos Premium",
+      "composition": "80% Algodão / 20% Poliéster",
+      "weightGrams": 450,
+      "packageDimensions": {
+        "lengthCm": 35,
+        "widthCm": 28,
+        "heightCm": 5
+      },
+      "priceBRL": 249.9,
+      "images": [
+        "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "variants": [
+        { "id": "u2-p", "size": "P", "color": "Preto", "stock": 12 },
+        { "id": "u2-m", "size": "M", "color": "Preto", "stock": 18 },
+        { "id": "u2-g", "size": "G", "color": "Preto", "stock": 14 },
+        { "id": "u2-gg", "size": "GG", "color": "Preto", "stock": 8 }
+      ],
+      "tag": "Lançamento Unisex"
     }
   ],
   "siteSettings": {
     "storeName": "CS CLOTHING STORE",
     "topBannerText": "Envio Expresso para todo o Brasil • Despacho em até 24h úteis",
-    "heroBadge": "COLEÇÃO EXCLUSIVA DE CAMISAS MASCULINAS & FEMININAS",
-    "heroTitle": "Elegância, Caimento Impecável e Estilo Autoral.",
-    "heroSubtitle": "Camisas masculinas e femininas confeccionadas com tecidos nobres, do linho puro à alfaiataria premium. Elegância autoral e entrega expressa para todo o território nacional.",
+    "heroBadge": "COLEÇÃO EXCLUSIVA DE ROUPAS & STREETWEAR UNISEX",
+    "heroTitle": "Estilo Autoral, Caimento Impecável e Moda Unisex.",
+    "heroSubtitle": "Peças selecionadas com tecidos nobres, modelagens modernas e conforto superior. Moda autoral unisex com entrega expressa para todo o Brasil.",
     "whatsappNumber": "",
     "instagramHandle": "",
     "jadlogOriginCep": "01310-100",
@@ -464,10 +518,10 @@
       },
       {
         "id": "adv-2",
-        "title": "Camisaria Especializada",
-        "description": "Modelagens masculinas e femininas com tecidos nobres e acabamento alfaiataria.",
-        "icon": "shirt",
-        "color": "blue",
+        "title": "Coleção & Roupas Unisex",
+        "description": "Modelagens autênticas com caimento moderno e tecidos premium para todos os estilos.",
+        "icon": "sparkles",
+        "color": "purple",
         "enabled": true
       },
       {

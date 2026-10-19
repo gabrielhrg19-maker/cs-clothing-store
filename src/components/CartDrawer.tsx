@@ -89,7 +89,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   onClearCart();
                 }}
                 className="text-[11px] bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
-                title="Esvaziar todas as camisas da sacola"
+                title="Esvaziar todas as peças da sacola"
               >
                 <Trash2 className="w-3 h-3 text-rose-500" />
                 <span>Esvaziar</span>

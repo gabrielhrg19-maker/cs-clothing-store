@@ -62,8 +62,8 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
   };
 
   const handleResetDefaults = () => {
-    if (window.confirm('Restaurar categorias padrão (Social, Linho, Casual, Polo)?')) {
-      onSaveCategories(['Camisa Social', 'Camisa Linho', 'Camisa Casual', 'Camisa Polo']);
+    if (window.confirm('Restaurar categorias padrão (Casual, Original, Oversized, Streetwear)?')) {
+      onSaveCategories(['Camisa Casual', 'Original', 'Oversized', 'Streetwear']);
     }
   };
 

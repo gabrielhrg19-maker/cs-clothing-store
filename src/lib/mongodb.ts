@@ -1,37 +1,31 @@
 import { MongoClient, Db } from 'mongodb';
 
-const uri = process.env.MONGODB_URI;
-const options = {};
-
-let client: MongoClient | null = null;
-let clientPromise: Promise<MongoClient> | null = null;
-
-if (uri) {
-  if (process.env.NODE_ENV === 'development') {
-    const globalWithMongo = global as typeof globalThis & {
-      _mongoClientPromise?: Promise<MongoClient>;
-    };
-
-    if (!globalWithMongo._mongoClientPromise) {
-      client = new MongoClient(uri, options);
-      globalWithMongo._mongoClientPromise = client.connect();
-    }
-    clientPromise = globalWithMongo._mongoClientPromise;
-  } else {
-    client = new MongoClient(uri, options);
-    clientPromise = client.connect();
-  }
-}
+let cachedClient: MongoClient | null = null;
+let cachedPromise: Promise<MongoClient> | null = null;
 
 export async function getDatabase(): Promise<Db | null> {
-  if (!clientPromise) return null;
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    console.warn('[MongoDB] MONGODB_URI não configurada nas variáveis de ambiente.');
+    return null;
+  }
+
   try {
-    const connectedClient = await clientPromise;
-    return connectedClient.db('cs_clothing_store');
-  } catch (error) {
-    console.error('Falha ao conectar no MongoDB:', error);
+    if (!cachedPromise) {
+      cachedClient = new MongoClient(uri, {
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 8000,
+        connectTimeoutMS: 10000,
+      });
+      cachedPromise = cachedClient.connect();
+    }
+    const client = await cachedPromise;
+    return client.db('cs_clothing_store');
+  } catch (err: any) {
+    console.error('[MongoDB] Falha na conexão:', err?.message || err);
+    cachedPromise = null; // Permite retentar na próxima requisição
     return null;
   }
 }
 
-export default clientPromise;
+export default getDatabase;

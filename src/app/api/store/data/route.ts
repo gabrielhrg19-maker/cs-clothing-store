@@ -241,8 +241,15 @@ async function writeStoreData(data: StoreData): Promise<void> {
 
 export async function GET() {
   try {
+    const db = await getDatabase();
     const data = await readStoreData();
-    return NextResponse.json(data);
+    return NextResponse.json({
+      ...data,
+      _system: {
+        database: db ? 'mongodb_atlas' : 'local_fallback',
+        envVarFound: !!process.env.MONGODB_URI,
+      },
+    });
   } catch (error: any) {
     console.error('Erro ao ler dados da loja:', error);
     return NextResponse.json(getDefaultData(), { status: 200 });
@@ -286,7 +293,15 @@ export async function POST(req: NextRequest) {
     };
 
     await writeStoreData(updatedData);
-    return NextResponse.json({ success: true, ...updatedData });
+    const db = await getDatabase();
+    return NextResponse.json({
+      success: true,
+      ...updatedData,
+      _system: {
+        database: db ? 'mongodb_atlas' : 'local_fallback',
+        envVarFound: !!process.env.MONGODB_URI,
+      },
+    });
   } catch (error: any) {
     console.error('Erro ao salvar dados da loja:', error);
     return NextResponse.json(

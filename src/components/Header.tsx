@@ -16,8 +16,10 @@ interface HeaderProps {
   onOpenCart: () => void;
   onOpenAdmin: () => void;
   onOpenLogisticsInfo?: () => void;
-  onSelectGenderFilter: (gender: 'Todos' | 'Masculino' | 'Feminino' | 'Unissex') => void;
-  currentGenderFilter: 'Todos' | 'Masculino' | 'Feminino' | 'Unissex';
+  onSelectCategory?: (category: string) => void;
+  selectedCategory?: string;
+  onSelectGenderFilter?: (gender: 'Todos' | 'Masculino' | 'Feminino' | 'Unissex') => void;
+  currentGenderFilter?: 'Todos' | 'Masculino' | 'Feminino' | 'Unissex';
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -30,8 +32,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectTheme,
   onOpenCart,
   onOpenAdmin,
-  onSelectGenderFilter,
-  currentGenderFilter,
+  onSelectCategory,
+  selectedCategory,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#090a0f]/95 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 transition-colors duration-200">
@@ -62,45 +64,36 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Links de Categoria Rápida (Desktop) */}
           <nav className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
             <button
-              onClick={() => onSelectGenderFilter('Unissex')}
+              onClick={() => {
+                if (onSelectCategory) onSelectCategory('Todas');
+                const el = document.getElementById('catalogo');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
               className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 font-bold ${
-                currentGenderFilter === 'Unissex'
+                !selectedCategory || selectedCategory === 'Todas'
                   ? 'bg-purple-900 text-white shadow-sm ring-1 ring-purple-400/50'
                   : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 bg-purple-50/60 dark:bg-purple-950/20'
               }`}
             >
               ✨ Unisex
             </button>
-            <button
-              onClick={() => onSelectGenderFilter('Masculino')}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                currentGenderFilter === 'Masculino'
-                  ? 'bg-blue-900 text-white shadow-sm'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-blue-900 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40'
-              }`}
-            >
-              👔 Masculinas
-            </button>
-            <button
-              onClick={() => onSelectGenderFilter('Feminino')}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                currentGenderFilter === 'Feminino'
-                  ? 'bg-rose-900 text-white shadow-sm'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-rose-900 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40'
-              }`}
-            >
-              👗 Femininas
-            </button>
-            <button
-              onClick={() => onSelectGenderFilter('Todos')}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                currentGenderFilter === 'Todos'
-                  ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 shadow-sm'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900'
-              }`}
-            >
-              Todas as Peças
-            </button>
+            {(siteSettings.categories || []).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  if (onSelectCategory) onSelectCategory(cat);
+                  const el = document.getElementById('catalogo');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  selectedCategory === cat
+                    ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </nav>
         </div>
 
@@ -180,45 +173,36 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Sub-barra de Categorias para Mobile (Fácil navegação com o polegar) */}
       <div className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 overflow-x-auto border-t border-neutral-200/70 dark:border-neutral-800/70 bg-neutral-50/90 dark:bg-neutral-900/90 text-[11px] font-bold no-scrollbar">
         <button
-          onClick={() => onSelectGenderFilter('Unissex')}
+          onClick={() => {
+            if (onSelectCategory) onSelectCategory('Todas');
+            const el = document.getElementById('catalogo');
+            el?.scrollIntoView({ behavior: 'smooth' });
+          }}
           className={`px-3 py-1 rounded-lg shrink-0 transition-all cursor-pointer flex items-center gap-1 font-bold ${
-            currentGenderFilter === 'Unissex'
+            !selectedCategory || selectedCategory === 'Todas'
               ? 'bg-purple-900 text-white shadow-xs'
               : 'text-purple-700 dark:text-purple-300 bg-purple-100/60 dark:bg-purple-950/40'
           }`}
         >
           ✨ Unisex
         </button>
-        <button
-          onClick={() => onSelectGenderFilter('Masculino')}
-          className={`px-3 py-1 rounded-lg shrink-0 transition-all cursor-pointer ${
-            currentGenderFilter === 'Masculino'
-              ? 'bg-blue-900 text-white'
-              : 'text-neutral-600 dark:text-neutral-400 hover:bg-blue-50 dark:hover:bg-blue-950/40'
-          }`}
-        >
-          👔 Masculinas
-        </button>
-        <button
-          onClick={() => onSelectGenderFilter('Feminino')}
-          className={`px-3 py-1 rounded-lg shrink-0 transition-all cursor-pointer ${
-            currentGenderFilter === 'Feminino'
-              ? 'bg-rose-900 text-white'
-              : 'text-neutral-600 dark:text-neutral-400 hover:bg-rose-50 dark:hover:bg-rose-950/40'
-          }`}
-        >
-          👗 Femininas
-        </button>
-        <button
-          onClick={() => onSelectGenderFilter('Todos')}
-          className={`px-3 py-1 rounded-lg shrink-0 transition-all cursor-pointer ${
-            currentGenderFilter === 'Todos'
-              ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950'
-              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/60 dark:hover:bg-neutral-800'
-          }`}
-        >
-          Todas as Peças
-        </button>
+        {(siteSettings.categories || []).map((cat) => (
+          <button
+            key={cat}
+            onClick={() => {
+              if (onSelectCategory) onSelectCategory(cat);
+              const el = document.getElementById('catalogo');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className={`px-3 py-1 rounded-lg shrink-0 transition-all cursor-pointer ${
+              selectedCategory === cat
+                ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950'
+                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/60 dark:hover:bg-neutral-800'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
     </header>
   );

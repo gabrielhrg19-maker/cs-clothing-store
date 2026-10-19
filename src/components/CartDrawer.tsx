@@ -111,7 +111,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="text-center py-16 text-neutral-400 dark:text-neutral-500 space-y-3">
               <PackageCheck className="w-12 h-12 mx-auto stroke-1" />
               <p className="text-sm font-bold text-neutral-700 dark:text-neutral-300">Sua sacola está vazia.</p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">Adicione camisas masculinas ou femininas à sua sacola para calcular o frete.</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Adicione peças da coleção à sua sacola para calcular o frete.</p>
             </div>
           ) : (
             <>

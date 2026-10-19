@@ -33,15 +33,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Badges de Destaque */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
           <span
-            className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm backdrop-blur-md ${
-              product.gender === 'Masculino'
-                ? 'bg-blue-100/95 dark:bg-blue-950/90 text-blue-900 dark:text-blue-200 border border-blue-300 dark:border-blue-800'
-                : product.gender === 'Feminino'
-                ? 'bg-rose-100/95 dark:bg-rose-950/90 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-800'
-                : 'bg-purple-100/95 dark:bg-purple-950/90 text-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-800'
-            }`}
+            className="text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm backdrop-blur-md bg-purple-100/95 dark:bg-purple-950/90 text-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-800"
           >
-            {product.gender}
+            ✨ {product.gender || 'Unissex'}
           </span>
           {product.tag && (
             <span className="bg-white/90 dark:bg-neutral-950/85 backdrop-blur-md text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-800 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider flex items-center gap-1 shadow-xs">

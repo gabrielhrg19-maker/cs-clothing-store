@@ -76,7 +76,7 @@ export const AdminCMSModal: React.FC<AdminCMSModalProps> = ({
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'sales' | 'settings' | 'orders'>('sales');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
-  const [adminGenderFilter, setAdminGenderFilter] = useState<'Todos' | 'Masculino' | 'Feminino' | 'Unissex'>('Todos');
+  const [adminCategoryFilter, setAdminCategoryFilter] = useState<string>('Todas');
   const [tempSettings, setTempSettings] = useState<SiteSettings>({ ...siteSettings });
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
@@ -812,15 +812,13 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="font-bold text-neutral-700 block mb-1">Gênero:</label>
+                      <label className="font-bold text-neutral-700 block mb-1">Modelo / Gênero:</label>
                       <select
-                        value={editingProduct.gender}
+                        value={editingProduct.gender || 'Unissex'}
                         onChange={(e) => setEditingProduct({ ...editingProduct, gender: e.target.value as any })}
                         className="w-full p-2.5 border border-neutral-300 rounded-xl bg-neutral-50 focus:bg-white font-medium"
                       >
-                        <option value="Unissex">✨ Roupa / Camisa Unissex (Para Todos)</option>
-                        <option value="Masculino">Camisa Masculina</option>
-                        <option value="Feminino">Camisa Feminina</option>
+                        <option value="Unissex">✨ Roupa / Peça Unissex (Padrão)</option>
                       </select>
                     </div>
 
@@ -973,7 +971,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                         Catálogo de Peças & Roupas Cadastradas
                       </h4>
                       <p className="text-xs text-neutral-500">
-                        Gerencie preços, fotos, descrições e estoque de roupas unisex, masculinas e femininas.
+                        Gerencie preços, fotos, descrições e estoque de roupas e streetwear unisex.
                       </p>
                     </div>
 
@@ -986,80 +984,54 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                     </button>
                   </div>
 
-                  {/* Abas Rápidas de Filtro por Categoria / Gênero no Painel */}
+                  {/* Abas Rápidas de Filtro por Categoria no Painel */}
                   <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-neutral-100 rounded-2xl border border-neutral-200">
                     <div className="flex flex-wrap gap-1.5 items-center">
                       <button
                         type="button"
-                        onClick={() => setAdminGenderFilter('Unissex')}
+                        onClick={() => setAdminCategoryFilter('Todas')}
                         className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
-                          adminGenderFilter === 'Unissex'
-                            ? 'bg-purple-900 text-white shadow-xs'
-                            : 'bg-white text-purple-800 hover:bg-purple-50 border border-purple-200'
-                        }`}
-                      >
-                        ✨ Roupas Unisex ({products.filter((p) => p.gender === 'Unissex').length})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAdminGenderFilter('Masculino')}
-                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
-                          adminGenderFilter === 'Masculino'
-                            ? 'bg-blue-900 text-white shadow-xs'
-                            : 'bg-white text-neutral-700 hover:bg-neutral-50 border border-neutral-200'
-                        }`}
-                      >
-                        👔 Masculinas ({products.filter((p) => p.gender === 'Masculino').length})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAdminGenderFilter('Feminino')}
-                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
-                          adminGenderFilter === 'Feminino'
-                            ? 'bg-rose-900 text-white shadow-xs'
-                            : 'bg-white text-neutral-700 hover:bg-neutral-50 border border-neutral-200'
-                        }`}
-                      >
-                        👗 Femininas ({products.filter((p) => p.gender === 'Feminino').length})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAdminGenderFilter('Todos')}
-                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
-                          adminGenderFilter === 'Todos'
+                          adminCategoryFilter === 'Todas'
                             ? 'bg-neutral-900 text-white shadow-xs'
                             : 'bg-white text-neutral-700 hover:bg-neutral-50 border border-neutral-200'
                         }`}
                       >
                         Todas as Peças ({products.length})
                       </button>
+                      {(siteSettings.categories || []).map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => setAdminCategoryFilter(cat)}
+                          className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                            adminCategoryFilter === cat
+                              ? 'bg-purple-900 text-white shadow-xs'
+                              : 'bg-white text-purple-800 hover:bg-purple-50 border border-purple-200'
+                          }`}
+                        >
+                          {cat} ({products.filter((p) => p.category === cat).length})
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  {products.filter((p) => adminGenderFilter === 'Todos' || p.gender === adminGenderFilter).length === 0 ? (
+                  {products.filter((p) => adminCategoryFilter === 'Todas' || p.category === adminCategoryFilter).length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-2xl border border-neutral-200 space-y-3">
                       <p className="text-sm font-bold text-neutral-700">
-                        Nenhuma peça encontrada na aba &quot;{adminGenderFilter}&quot;.
+                        Nenhuma peça encontrada na categoria &quot;{adminCategoryFilter}&quot;.
                       </p>
                       <button
                         type="button"
-                        onClick={() => {
-                          handleStartCreate();
-                          if (adminGenderFilter === 'Unissex') {
-                            setTimeout(() => {
-                              setEditingProduct((prev) => prev ? { ...prev, gender: 'Unissex' } : prev);
-                            }, 10);
-                          }
-                        }}
+                        onClick={handleStartCreate}
                         className="px-4 py-2 bg-purple-900 hover:bg-purple-800 text-white font-bold text-xs rounded-xl cursor-pointer"
                       >
-                        + Cadastrar Peça {adminGenderFilter === 'Unissex' ? 'Unisex' : ''}
+                        + Cadastrar Nova Peça
                       </button>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {products
-                        .filter((p) => adminGenderFilter === 'Todos' || p.gender === adminGenderFilter)
+                        .filter((p) => adminCategoryFilter === 'Todas' || p.category === adminCategoryFilter)
                         .map((prod) => (
                       <div
                         key={prod.id}
@@ -1078,14 +1050,8 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                         <div className="flex-1 flex flex-col justify-between h-full">
                           <div>
                             <div className="flex items-center gap-1.5">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                                prod.gender === 'Masculino'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : prod.gender === 'Feminino'
-                                  ? 'bg-rose-100 text-rose-800'
-                                  : 'bg-purple-100 text-purple-800'
-                              }`}>
-                                {prod.gender === 'Unissex' ? '✨ Unissex' : prod.gender}
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-purple-100 text-purple-800">
+                                ✨ {prod.gender || 'Unissex'}
                               </span>
                               <span className="text-[10px] text-neutral-400">•</span>
                               <span className="text-[10px] text-neutral-600 font-bold bg-neutral-100 px-2 py-0.5 rounded-md">

@@ -45,8 +45,7 @@ export default function HomePage() {
   // Tema (Dark / Light) com persistência - padrão 'light' (modo claro límpido e elegante)
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-  // Filtros - Padrão Unissex como aba principal
-  const [genderFilter, setGenderFilter] = useState<'Todos' | 'Masculino' | 'Feminino' | 'Unissex'>('Unissex');
+  // Filtro de Categoria (Padrão: Todas as Peças Unisex)
   const [categoryFilter, setCategoryFilter] = useState<string>('Todas');
 
   // Sacola e Modais
@@ -110,10 +109,13 @@ export default function HomePage() {
 
     // 4. Carregamento ultra-seguro e sincronização bidirecional
     (async () => {
-      // 4.1 Carregamento imediato do cache local (0ms de espera)
+      // 4.1 Carregamento imediato do cache local (filtrando qualquer produto demo antigo cs-m-*, cs-f-*, cs-u-*)
       const cachedProds = await safeGetStoredData<Product[]>('cs_clothing_products');
-      if (cachedProds && Array.isArray(cachedProds) && cachedProds.length > 0) {
-        setProducts(cachedProds);
+      const cleanCached = Array.isArray(cachedProds)
+        ? cachedProds.filter((p) => !p.id.startsWith('cs-m-') && !p.id.startsWith('cs-f-') && !p.id.startsWith('cs-u-'))
+        : [];
+      if (cleanCached.length > 0) {
+        setProducts(cleanCached);
       }
 
       const cachedSettings = await safeGetStoredData<SiteSettings>('cs_clothing_settings');
@@ -134,15 +136,18 @@ export default function HomePage() {
 
           // Sincronização inteligente de Produtos:
           if (Array.isArray(data.products) && data.products.length > 0) {
-            setProducts(data.products);
-            safeSetLocalStorage('cs_clothing_products', data.products);
-          } else if (cachedProds && Array.isArray(cachedProds) && cachedProds.length > 0) {
+            const cleanServer = data.products.filter(
+              (p: Product) => !p.id.startsWith('cs-m-') && !p.id.startsWith('cs-f-') && !p.id.startsWith('cs-u-')
+            );
+            setProducts(cleanServer);
+            safeSetLocalStorage('cs_clothing_products', cleanServer);
+          } else if (cleanCached.length > 0) {
             // Se o servidor estiver vazio, NUNCA apaga os dados locais: sobe o cache do usuário para o servidor
             console.log('Restaurando produtos locais para o servidor...');
             fetch('/api/store/data', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ products: cachedProds }),
+              body: JSON.stringify({ products: cleanCached }),
             }).catch(() => {});
           }
 
@@ -426,9 +431,8 @@ export default function HomePage() {
     handleClearCart();
   };
 
-  // Filtragem de Produtos
+  // Filtragem de Produtos (Coleção 100% Unisex filtrada por Categoria)
   const filteredProducts = products.filter((prod) => {
-    if (genderFilter !== 'Todos' && prod.gender !== genderFilter) return false;
     if (categoryFilter !== 'Todas' && prod.category !== categoryFilter) return false;
     return true;
   });
@@ -449,7 +453,7 @@ export default function HomePage() {
 
   const currentCategories = siteSettings.categories && siteSettings.categories.length > 0
     ? siteSettings.categories
-    : ['Camisa Social', 'Camisa Linho', 'Camisa Casual', 'Camisa Polo'];
+    : ['Camisa Casual', 'Original', 'Oversized', 'Streetwear'];
 
   const availableCategories = ['Todas', ...currentCategories];
 
@@ -470,8 +474,8 @@ export default function HomePage() {
         onSelectTheme={handleSelectTheme}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenAdmin={handleOpenAdmin}
-        onSelectGenderFilter={setGenderFilter}
-        currentGenderFilter={genderFilter}
+        onSelectCategory={setCategoryFilter}
+        selectedCategory={categoryFilter}
       />
 
       <main className="flex-1">
@@ -505,47 +509,14 @@ export default function HomePage() {
                 <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-2 sm:pt-3">
                   <button
                     onClick={() => {
-                      setGenderFilter('Unissex');
+                      setCategoryFilter('Todas');
                       const el = document.getElementById('catalogo');
                       el?.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="px-5 sm:px-6 py-3 sm:py-3.5 bg-purple-900 hover:bg-purple-800 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center gap-2 cursor-pointer active:scale-95"
+                    className="px-6 py-3.5 bg-purple-900 hover:bg-purple-800 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center gap-2 cursor-pointer active:scale-95"
                   >
                     <span>✨ Ver Coleção Unisex</span>
                     <ArrowRight className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setGenderFilter('Masculino');
-                      const el = document.getElementById('catalogo');
-                      el?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="px-3.5 sm:px-4 py-3 sm:py-3.5 bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                  >
-                    👔 Masculinas
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setGenderFilter('Feminino');
-                      const el = document.getElementById('catalogo');
-                      el?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="px-3.5 sm:px-4 py-3 sm:py-3.5 bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                  >
-                    👗 Femininas
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setGenderFilter('Todos');
-                      const el = document.getElementById('catalogo');
-                      el?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="px-3.5 sm:px-4 py-3 sm:py-3.5 bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                  >
-                    Todas as Peças
                   </button>
 
                   {isAdminLoggedIn && (
@@ -649,7 +620,7 @@ export default function HomePage() {
           )
         )}
 
-        {/* Catálogo de Camisas Masculinas e Femininas */}
+        {/* Catálogo de Roupas Unisex */}
         <section id="catalogo" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
@@ -667,74 +638,41 @@ export default function HomePage() {
                 )}
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-neutral-950 dark:text-white tracking-tight mt-1">
-                {genderFilter === 'Unissex'
+                {categoryFilter === 'Todas'
                   ? '✨ Roupas & Streetwear Unisex'
-                  : genderFilter === 'Masculino'
-                  ? 'Roupas & Camisas Masculinas'
-                  : genderFilter === 'Feminino'
-                  ? 'Roupas & Camisas Femininas'
-                  : 'Todas as Peças da Loja'}
+                  : `✨ ${categoryFilter} Unisex`}
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Exibindo {filteredProducts.length} modelo(s) com pronta entrega e envio rápido para todo o Brasil.
               </p>
             </div>
 
-            {/* Filtros de Gênero e Categoria */}
-            <div className="flex flex-wrap gap-2 items-center">
-              {/* Botões de Gênero */}
-              <div className="flex bg-neutral-200 dark:bg-[#13141f] p-1 rounded-xl text-xs font-bold border border-transparent dark:border-neutral-800">
-                <button
-                  onClick={() => setGenderFilter('Unissex')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 font-bold ${
-                    genderFilter === 'Unissex'
-                      ? 'bg-purple-900 text-white shadow-xs'
-                      : 'text-purple-800 dark:text-purple-300 hover:bg-purple-100/50 dark:hover:bg-purple-950/40'
-                  }`}
-                >
-                  ✨ Unisex
-                </button>
-                <button
-                  onClick={() => setGenderFilter('Masculino')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    genderFilter === 'Masculino' ? 'bg-white dark:bg-blue-950 text-blue-900 dark:text-blue-300 shadow-xs' : 'text-neutral-600 dark:text-neutral-400'
-                  }`}
-                >
-                  Masculinas
-                </button>
-                <button
-                  onClick={() => setGenderFilter('Feminino')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    genderFilter === 'Feminino' ? 'bg-white dark:bg-rose-950 text-rose-900 dark:text-rose-300 shadow-xs' : 'text-neutral-600 dark:text-neutral-400'
-                  }`}
-                >
-                  Femininas
-                </button>
-                <button
-                  onClick={() => setGenderFilter('Todos')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    genderFilter === 'Todos' ? 'bg-white dark:bg-[#202230] text-neutral-950 dark:text-white shadow-xs' : 'text-neutral-600 dark:text-neutral-400'
-                  }`}
-                >
-                  Todas as Peças
-                </button>
-              </div>
+            {/* Categorias Dinâmicas & Editáveis (Todas Unisex) */}
+            <div className="flex flex-wrap gap-1.5 items-center">
+              <button
+                onClick={() => setCategoryFilter('Todas')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  categoryFilter === 'Todas'
+                    ? 'bg-purple-900 text-white shadow-xs'
+                    : 'bg-white dark:bg-[#12131b] text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-700'
+                }`}
+              >
+                ✨ Unisex (Todas)
+              </button>
 
-              {/* Categorias Dinâmicas & Editáveis */}
-              <div className="flex flex-wrap gap-1.5 items-center">
-                {availableCategories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setCategoryFilter(cat)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                      categoryFilter === cat
-                        ? 'bg-neutral-950 dark:bg-white text-white dark:text-neutral-950 shadow-xs'
-                        : 'bg-white dark:bg-[#12131b] text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-700'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+              {currentCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    categoryFilter === cat
+                      ? 'bg-neutral-950 dark:bg-white text-white dark:text-neutral-950 shadow-xs font-bold'
+                      : 'bg-white dark:bg-[#12131b] text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-700'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
 
                 {/* Botão de Edição das Categorias (Visível exclusivamente quando logado como ADM) */}
                 {isAdminLoggedIn && (
@@ -749,22 +687,18 @@ export default function HomePage() {
                 )}
               </div>
             </div>
-          </div>
 
           {/* Grid de Cards de Camisas */}
           {filteredProducts.length === 0 ? (
             <div className="text-center py-16 sm:py-20 bg-white dark:bg-[#0e0f17] rounded-3xl border border-neutral-200 dark:border-neutral-800 space-y-3">
               <Package className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mx-auto" />
-              <h4 className="text-base font-bold text-neutral-800 dark:text-neutral-200">Nenhuma camisa encontrada neste filtro.</h4>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">Tente selecionar outro gênero ou categoria.</p>
+              <h4 className="text-base font-bold text-neutral-800 dark:text-neutral-200">Nenhuma peça encontrada nesta categoria.</h4>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Tente selecionar outra categoria ou confira todas as peças unisex.</p>
               <button
-                onClick={() => {
-                  setGenderFilter('Todos');
-                  setCategoryFilter('Todas');
-                }}
+                onClick={() => setCategoryFilter('Todas')}
                 className="px-4 py-2 bg-neutral-950 dark:bg-white text-white dark:text-neutral-950 rounded-xl text-xs font-bold cursor-pointer"
               >
-                Limpar Filtros
+                Ver Todas as Peças
               </button>
             </div>
           ) : (
@@ -830,20 +764,29 @@ export default function HomePage() {
               </h5>
               <ul className="space-y-1.5">
                 <li>
-                  <button onClick={() => setGenderFilter('Masculino')} className="hover:text-neutral-950 dark:hover:text-white cursor-pointer">
-                    • Camisas Masculinas
+                  <button
+                    onClick={() => {
+                      setCategoryFilter('Todas');
+                      document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="hover:text-neutral-950 dark:hover:text-white cursor-pointer"
+                  >
+                    • ✨ Coleção Unisex
                   </button>
                 </li>
-                <li>
-                  <button onClick={() => setGenderFilter('Feminino')} className="hover:text-neutral-950 dark:hover:text-white cursor-pointer">
-                    • Camisas Femininas
-                  </button>
-                </li>
-                <li>
-                  <button onClick={() => setGenderFilter('Unissex')} className="hover:text-neutral-950 dark:hover:text-white cursor-pointer">
-                    • Roupas Unissex
-                  </button>
-                </li>
+                {currentCategories.map((cat) => (
+                  <li key={cat}>
+                    <button
+                      onClick={() => {
+                        setCategoryFilter(cat);
+                        document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="hover:text-neutral-950 dark:hover:text-white cursor-pointer"
+                    >
+                      • {cat}
+                    </button>
+                  </li>
+                ))}
                 <li>
                   <a href="#catalogo" className="hover:text-neutral-950 dark:hover:text-white cursor-pointer">
                     • Coleção Completa 2026

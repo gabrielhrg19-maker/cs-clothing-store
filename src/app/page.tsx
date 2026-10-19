@@ -45,8 +45,8 @@ export default function HomePage() {
   // Tema (Dark / Light) com persistência - padrão 'light' (modo claro límpido e elegante)
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-  // Filtros
-  const [genderFilter, setGenderFilter] = useState<'Todos' | 'Masculino' | 'Feminino' | 'Unissex'>('Todos');
+  // Filtros - Padrão Unissex como aba principal
+  const [genderFilter, setGenderFilter] = useState<'Todos' | 'Masculino' | 'Feminino' | 'Unissex'>('Unissex');
   const [categoryFilter, setCategoryFilter] = useState<string>('Todas');
 
   // Sacola e Modais

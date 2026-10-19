@@ -489,20 +489,20 @@
     }
   ],
   "siteSettings": {
-    "storeName": "CS CLOTHING STORE",
+    "storeName": "CLOTHING STORE",
     "topBannerText": "Envio Expresso para todo o Brasil • Despacho em até 24h úteis",
-    "heroBadge": "COLEÇÃO EXCLUSIVA DE ROUPAS & STREETWEAR UNISEX",
-    "heroTitle": "Estilo Autoral, Caimento Impecável e Moda Unisex.",
-    "heroSubtitle": "Peças selecionadas com tecidos nobres, modelagens modernas e conforto superior. Moda autoral unisex com entrega expressa para todo o Brasil.",
+    "heroBadge": "CASUAL • JOVEM • STREET • FITNESS",
+    "heroTitle": "Seu estilo. Sua identidade.",
+    "heroSubtitle": "Moda masculina, feminina e unissex para quem valoriza conforto, qualidade e personalidade. Do casual ao streetwear, do dia a dia ao fitness, encontre peças que combinam com seu estilo na Clothing Store.",
     "whatsappNumber": "",
     "instagramHandle": "",
     "jadlogOriginCep": "01310-100",
     "jadlogPickupAddress": "CS Clothing Store CD • Rua Augusta, 1400 - Consolação, São Paulo - SP",
     "categories": [
-      "Camisa Social",
-      "Camisa Linho",
       "Camisa Casual",
-      "Camisa Polo"
+      "Original",
+      "Oversized",
+      "Streetwear"
     ],
     "adminUsername": "admin",
     "adminPassword": "admin",
@@ -510,7 +510,7 @@
     "advantages": [
       {
         "id": "adv-1",
-        "title": "Envio Expresso para Todo Brasil",
+        "title": "Envio para Todo Brasil",
         "description": "Entregas ágeis e rastreadas com frete calculado diretamente no checkout.",
         "icon": "truck",
         "color": "emerald",
@@ -518,16 +518,16 @@
       },
       {
         "id": "adv-2",
-        "title": "Coleção & Roupas Unisex",
-        "description": "Modelagens autênticas com caimento moderno e tecidos premium para todos os estilos.",
-        "icon": "sparkles",
-        "color": "purple",
+        "title": "Variedades de estilos",
+        "description": "Moda casual, jovem, street e fitness. Peças masculinas, femininas e unissex para todos os estilos.",
+        "icon": "shirt",
+        "color": "blue",
         "enabled": true
       },
       {
         "id": "adv-3",
-        "title": "Linho Puro & Fio Nobre",
-        "description": "Peças selecionadas com toque macio, corte impecável e durabilidade superior.",
+        "title": "Conforto e Qualidade",
+        "description": "Peças selecionadas com modelagens exclusivas, toque macio e máxima durabilidade.",
         "icon": "sparkles",
         "color": "purple",
         "enabled": true

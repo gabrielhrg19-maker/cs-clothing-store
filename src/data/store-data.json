@@ -67,6 +67,9 @@
     "adminUsername": "admin",
     "adminPassword": "admin",
     "mercadoPagoAccessToken": "APP_USR-3345611795216825-031010-c151d4812a4f61dac62f4135483553a6-214542459",
+    "isStorePaused": true,
+    "pauseMessageTitle": "Estamos preparando novidades exclusivas para você.",
+    "pauseMessageSubtitle": "Nosso catálogo online está temporariamente em pausa para atualização de estoque e novidades na coleção. Voltaremos em breve!",
     "advantages": [
       {
         "id": "adv-1",

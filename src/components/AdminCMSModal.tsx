@@ -1425,6 +1425,50 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                 </button>
               </div>
 
+              {/* STATUS DE FUNCIONAMENTO DA LOJA (PAUSAR / ABRIR) */}
+              <div className={`p-4 sm:p-5 rounded-2xl border transition-all ${
+                tempSettings.isStorePaused
+                  ? 'bg-amber-500/10 border-amber-400 dark:border-amber-500/40 text-amber-950 dark:text-amber-100'
+                  : 'bg-emerald-500/10 border-emerald-400 dark:border-emerald-500/40 text-emerald-950 dark:text-emerald-100'
+              }`}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-3 w-3 relative mt-1">
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                        tempSettings.isStorePaused ? 'bg-amber-400' : 'bg-emerald-400'
+                      }`} />
+                      <span className={`relative inline-flex rounded-full h-3 w-3 ${
+                        tempSettings.isStorePaused ? 'bg-amber-500' : 'bg-emerald-500'
+                      }`} />
+                    </span>
+                    <div>
+                      <h4 className="font-black text-sm">
+                        {tempSettings.isStorePaused ? '⏸ Loja Temporariamente Pausada' : '✅ Loja Aberta ao Público'}
+                      </h4>
+                      <p className="text-xs opacity-80 mt-0.5">
+                        {tempSettings.isStorePaused
+                          ? 'Os visitantes veem a tela elegante de "Em Breve / Manutenção". Apenas você (administrador logado) consegue ver o catálogo.'
+                          : 'O catálogo e os pagamentos estão funcionando normalmente para todos os clientes.'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextState = !tempSettings.isStorePaused;
+                      setTempSettings({ ...tempSettings, isStorePaused: nextState });
+                    }}
+                    className={`px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer whitespace-nowrap self-start sm:self-center ${
+                      tempSettings.isStorePaused
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        : 'bg-amber-600 hover:bg-amber-700 text-white'
+                    }`}
+                  >
+                    {tempSettings.isStorePaused ? '▶ Reativar Loja Agora' : '⏸ Pausar Loja'}
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className="font-bold text-neutral-700 block mb-1">Nome da Loja:</label>
                 <input

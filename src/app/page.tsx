@@ -457,12 +457,185 @@ export default function HomePage() {
 
   const availableCategories = ['Todas', ...currentCategories];
 
+  // Se a loja estiver pausada e o usuário NÃO for o lojista autenticado:
+  if (siteSettings.isStorePaused && !isAdminLoggedIn) {
+    return (
+      <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${
+        theme === 'dark'
+          ? 'dark bg-[#07080b] text-neutral-100 selection:bg-white selection:text-neutral-950'
+          : 'bg-[#f8f9fc] text-neutral-900 selection:bg-neutral-900 selection:text-white'
+      }`}>
+        {/* Top Header Minimalista */}
+        <header className="w-full border-b border-neutral-200/80 dark:border-white/10 bg-white/70 dark:bg-black/40 backdrop-blur-md sticky top-0 z-40">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-black tracking-tighter text-lg sm:text-xl text-neutral-950 dark:text-white">
+                {siteSettings.storeName || 'CLOTHING STORE'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleToggleTheme}
+                className="p-2 rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                title="Alternar Tema"
+              >
+                <Sparkles className="w-4 h-4 text-amber-500" />
+              </button>
+              <button
+                onClick={() => setIsAdminLoginOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/10 transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>Acesso Lojista</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Hero de Manutenção Elegante */}
+        <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-16 relative overflow-hidden">
+          {/* Efeitos de Luz Ambiente */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/10 dark:bg-purple-600/15 rounded-full blur-[140px] pointer-events-none" />
+          <div className="absolute bottom-10 right-1/4 w-80 h-80 bg-amber-500/10 dark:bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+          <div className="max-w-2xl mx-auto text-center space-y-8 relative z-10">
+            {/* Badge de Status */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black uppercase tracking-widest shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+              <span>Loja em Pausa Temporária</span>
+            </div>
+
+            {/* Título & Mensagem */}
+            <div className="space-y-4">
+              <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight text-neutral-950 dark:text-white">
+                {siteSettings.pauseMessageTitle || 'Estamos preparando novidades exclusivas para você.'}
+              </h1>
+              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto leading-relaxed">
+                {siteSettings.pauseMessageSubtitle || 'Nosso catálogo online está temporariamente em pausa para atualização de estoque e novidades na coleção. Voltaremos em breve!'}
+              </p>
+            </div>
+
+            {/* Destaques da Loja */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-left">
+              <div className="p-4 rounded-2xl bg-white dark:bg-white/[0.04] border border-neutral-200 dark:border-white/10 shadow-xs">
+                <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400 mb-2" />
+                <h4 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white mb-1">Coleção Autoral</h4>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">Modelagens modernas e caimento autêntico 100% unissex.</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-white dark:bg-white/[0.04] border border-neutral-200 dark:border-white/10 shadow-xs">
+                <Truck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-2" />
+                <h4 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white mb-1">Envio Jadlog</h4>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">Entregas ágeis e rastreadas para todo o território nacional.</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-white dark:bg-white/[0.04] border border-neutral-200 dark:border-white/10 shadow-xs">
+                <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 mb-2" />
+                <h4 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white mb-1">Compra Segura</h4>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">Pagamentos protegidos via Pix imediato ou cartão.</p>
+              </div>
+            </div>
+
+            {/* Ações de Contato / Redes */}
+            {(siteSettings.whatsappNumber || siteSettings.instagramHandle) && (
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+                {siteSettings.whatsappNumber && (
+                  <a
+                    href={`https://wa.me/55${siteSettings.whatsappNumber.replace(/\D/g, '').replace(/^55/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-md cursor-pointer"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Falar no WhatsApp</span>
+                  </a>
+                )}
+                {siteSettings.instagramHandle && (
+                  <a
+                    href={`https://instagram.com/${siteSettings.instagramHandle.replace('@', '').trim()}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-md cursor-pointer"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>@{siteSettings.instagramHandle.replace('@', '').trim()}</span>
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* Rodapé Minimalista */}
+        <footer className="w-full border-t border-neutral-200/80 dark:border-white/10 py-6 text-center text-xs text-neutral-500 dark:text-neutral-500">
+          <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span>&copy; {new Date().getFullYear()} {siteSettings.storeName || 'CLOTHING STORE'} • Todos os direitos reservados.</span>
+            <button
+              onClick={() => setIsAdminLoginOpen(true)}
+              className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors flex items-center gap-1 text-xs cursor-pointer"
+            >
+              <Lock className="w-3 h-3" />
+              <span>Área do Administrador</span>
+            </button>
+          </div>
+        </footer>
+
+        {/* Modal de Login do Administrador */}
+        <AdminLoginModal
+          isOpen={isAdminLoginOpen}
+          onClose={() => setIsAdminLoginOpen(false)}
+          onLoginSuccess={handleLoginSuccess}
+          siteSettings={siteSettings}
+        />
+
+        {/* Modal de Painel CMS do Administrador */}
+        <AdminCMSModal
+          isOpen={isAdminCMSOpen}
+          onClose={() => setIsAdminCMSOpen(false)}
+          products={products}
+          siteSettings={siteSettings}
+          orders={orders}
+          onSaveProducts={handleSaveProducts}
+          onSaveSettings={handleSaveSettings}
+          onUpdateOrderStatus={handleUpdateOrderStatus}
+          onDeleteOrder={handleDeleteOrder}
+          onClearAllOrders={handleClearAllOrders}
+          onResetToDefault={handleResetToDefault}
+          onLogout={handleLogout}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${
       theme === 'dark'
         ? 'dark bg-[#07080b] text-neutral-100 selection:bg-white selection:text-neutral-950'
         : 'bg-[#f8f9fc] text-neutral-900 selection:bg-neutral-900 selection:text-white'
     }`}>
+      {/* Faixa de Alerta: Modo de Manutenção / Loja Pausada */}
+      {siteSettings.isStorePaused && (
+        <div className="bg-amber-500 text-neutral-950 px-4 py-2.5 text-xs sm:text-sm font-bold flex flex-wrap items-center justify-between gap-3 shadow-md border-b border-amber-600 sticky top-0 z-50">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-neutral-950 animate-ping" />
+            <span>⚠️ MODO DE MANUTENÇÃO ATIVO: O site está pausado para visitantes. Apenas você (administrador) consegue ver o catálogo.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleSaveSettings({ ...siteSettings, isStorePaused: false })}
+              className="px-3.5 py-1.5 bg-neutral-950 hover:bg-neutral-900 text-white rounded-lg text-xs font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+            >
+              ▶ Reativar Loja para o Público
+            </button>
+            <button
+              onClick={() => setIsAdminCMSOpen(true)}
+              className="px-3.5 py-1.5 bg-neutral-950/10 hover:bg-neutral-950/20 text-neutral-950 rounded-lg text-xs font-bold transition-all cursor-pointer"
+            >
+              Painel ADM
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header com Logo Oficial CS CLOTHING STORE */}
       <Header
         siteSettings={siteSettings}

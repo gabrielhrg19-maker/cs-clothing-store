@@ -99,4 +99,7 @@ export interface SiteSettings {
   adminUsername?: string;
   adminPassword?: string;
   mercadoPagoAccessToken?: string;
+  isStorePaused?: boolean;
+  pauseMessageTitle?: string;
+  pauseMessageSubtitle?: string;
 }

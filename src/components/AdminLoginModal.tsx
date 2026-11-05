@@ -35,7 +35,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
 
     if (
       (cleanUser === expectedUser && cleanPass === expectedPass) ||
-      (cleanUser === 'admin' && ['admin', 'admin123', 'cs123', '123456'].includes(cleanPass))
+      (cleanUser === 'gabriel123' && cleanPass === 'gabriel123')
     ) {
       setError('');
       setPassword('');

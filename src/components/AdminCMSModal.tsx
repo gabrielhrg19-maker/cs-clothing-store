@@ -1865,7 +1865,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                     <label className="font-semibold text-neutral-700 block mb-1 text-xs">Usuário ADM:</label>
                     <input
                       type="text"
-                      value={tempSettings.adminUsername || 'admin'}
+                      value={tempSettings.adminUsername || 'gabriel123'}
                       onChange={(e) => setTempSettings({ ...tempSettings, adminUsername: e.target.value })}
                       className="w-full p-2 border border-neutral-300 rounded-lg bg-white text-xs font-medium"
                     />
@@ -1874,7 +1874,7 @@ ${ord.items.map((it) => `- ${it.quantity}x ${it.product.name} (Tam: ${it.variant
                     <label className="font-semibold text-neutral-700 block mb-1 text-xs">Senha de Acesso ADM:</label>
                     <input
                       type="text"
-                      value={tempSettings.adminPassword || 'admin'}
+                      value={tempSettings.adminPassword || 'gabriel123'}
                       onChange={(e) => setTempSettings({ ...tempSettings, adminPassword: e.target.value })}
                       className="w-full p-2 border border-neutral-300 rounded-lg bg-white text-xs font-mono"
                       placeholder="Digite a nova senha..."
